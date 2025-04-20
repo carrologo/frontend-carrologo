@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="uuid-d410f537-8314-4779-a64e-5124c10275bc" data-name="Capa 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1924 945">
+  <defs>
+    <style>
+      .uuid-7b9827e8-85fa-4e10-8134-ff0f45aa3d29 {
+        clip-path: url(#uuid-d61e4fdc-2675-4107-9c46-01b4a29e48e1);
+      }
+
+      .uuid-61e557b3-2603-4dc8-b872-2647e7718160 {
+        fill: url(#uuid-c9b033a7-4adb-41e9-b05e-11fda53d7fdf);
+      }
+
+      .uuid-61e557b3-2603-4dc8-b872-2647e7718160, .uuid-989f3a6e-7101-4d05-82e4-fd9efd118a00, .uuid-330934cb-a9ba-46d3-83d4-65890926403a, .uuid-d24f251f-2066-4ccb-acc3-e51e10c1de82, .uuid-88b69bdc-aecd-4e67-857f-24383298af31 {
+        stroke-width: 0px;
+      }
+
+      .uuid-61e557b3-2603-4dc8-b872-2647e7718160, .uuid-d24f251f-2066-4ccb-acc3-e51e10c1de82 {
+        fill-opacity: .24;
+      }
+
+      .uuid-989f3a6e-7101-4d05-82e4-fd9efd118a00 {
+        fill: url(#uuid-361bcd2c-b710-4120-b0ae-feed9e5bae33);
+        fill-opacity: .2;
+      }
+
+      .uuid-c614a2d5-59e5-435f-b856-b9f4f200c294, .uuid-330934cb-a9ba-46d3-83d4-65890926403a {
+        fill: #d9f1fa;
+      }
+
+      .uuid-d24f251f-2066-4ccb-acc3-e51e10c1de82 {
+        fill: url(#uuid-677c5284-bc8c-48e6-a2d0-d3fed5a3688d);
+      }
+
+      .uuid-88b69bdc-aecd-4e67-857f-24383298af31 {
+        fill: rgba(166, 166, 166, .24);
+      }
+    </style>
+    <clipPath id="uuid-d61e4fdc-2675-4107-9c46-01b4a29e48e1">
+      <rect class="uuid-330934cb-a9ba-46d3-83d4-65890926403a" x="2" width="1920" height="945"/>
+    </clipPath>
+    <linearGradient id="uuid-c9b033a7-4adb-41e9-b05e-11fda53d7fdf" data-name="Degradado sin nombre 17" x1="879.9255319" y1="994.3624161" x2="1684.9255319" y2="994.3624161" gradientTransform="translate(564 1112.5) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2ecceb"/>
+      <stop offset=".20775" stop-color="#27bee4"/>
+      <stop offset=".593971" stop-color="#159cd2"/>
+      <stop offset="1" stop-color="#0071bc"/>
+    </linearGradient>
+    <linearGradient id="uuid-677c5284-bc8c-48e6-a2d0-d3fed5a3688d" data-name="Degradado sin nombre 16" x1="526.9255319" y1="1131.8624161" x2="833.9255319" y2="1131.8624161" gradientTransform="translate(564 1112.5) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0071bc"/>
+      <stop offset=".20775" stop-color="#067ec2"/>
+      <stop offset=".593971" stop-color="#18a0d4"/>
+      <stop offset="1" stop-color="#2ecceb"/>
+    </linearGradient>
+    <linearGradient id="uuid-361bcd2c-b710-4120-b0ae-feed9e5bae33" data-name="Degradado sin nombre 14" x1="-564" y1="309.0000065" x2="1360" y2="309.0000065" gradientTransform="translate(564 1112.5) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29abe2"/>
+      <stop offset=".165689" stop-color="#25a6df"/>
+      <stop offset=".346046" stop-color="#1c99d6"/>
+      <stop offset=".532612" stop-color="#0d83c8"/>
+      <stop offset=".657482" stop-color="#0071bc"/>
+    </linearGradient>
+  </defs>
+  <g id="uuid-4bb2762a-edb1-47d6-bd03-f900ee1a1e21" data-name="Layer 1">
+    <g>
+      <rect class="uuid-c614a2d5-59e5-435f-b856-b9f4f200c294" x="2" width="1920" height="945"/>
+      <g class="uuid-7b9827e8-85fa-4e10-8134-ff0f45aa3d29">
+        <path class="uuid-61e557b3-2603-4dc8-b872-2647e7718160" d="M1925.5955759,349.1975815s216.2198486-3.5130005,323.3299561,6.4400024c0,0-113.9899902-243.9400024-323.3299561-342.296631,0,0-79.1700439-47.7928694-148.1400146-75.7189711,0,0-168.5400391-56.9843979-333.5300293-56.9843979V56.2743828l115.3199463,32.0050011s44.1800537,15.8582001,54.6800537,20.3582001l22,9.5,18.9000244,9.7580032s185.2800293,88.4029922,270.7700195,221.3019943Z"/>
+        <path class="uuid-88b69bdc-aecd-4e67-857f-24383298af31" d="M1090.9255319,73.1421844l-163.4920044-112.5046005S177.4215341,99.8620865-236.0744681,339.6375839c0,0,409.0970001-189.5,1327-266.4953995Z"/>
+        <path class="uuid-d24f251f-2066-4ccb-acc3-e51e10c1de82" d="M1397.9255319,60.6148827V-104.3624161s-168.3000488,8.8860016-307,70.7044983l51.6800537,99.2955017s174.039917-10.4318008,255.3199463-5.0227013Z"/>
+      </g>
+    </g>
+    <path class="uuid-989f3a6e-7101-4d05-82e4-fd9efd118a00" d="M43.0783997,917.4409943l-21.7047997-93.0410004s128.6043968-3.7319946,173.4943962-24.4379883c0,0,223.5999908-53.2120056,325.5800018-8.9230042.9609985.4169922,1.9110107.8430023,2.848999,1.2769928l4.223999-4.9229965-34.4349976-42.8164978s374.0369873-148.0883026,613.6339722,76.5575027l-197.4019775-7.3460083,27.7890015,32.8170013s602.3130493-2.470993,682.0829468,6.5490112c0,0-74.1298828,14.6119995-122.1599121,70.5059967,0,0,71.1199951-48.6690063,120.4099121-41.9060059l60.2301025.4430084s114.2698975,4.4980011,182.8900146,62.8029938l63.4399414-1.6080017s-130.3100586-117.5079956-268.5400391-117.5079956l-419.9199219-11.3529968s-133.0900879-101.0885048-224.8000488-124.5590057c0,0-28.9309692-10.4440994-77.2099609-19.8949699,0,0-174.2840576-26.6561298-444.9280396,16.8815689l-227.1839905,52.4333992S119.1600037,792.2559967,0,806.1609955l43.0783997,111.2799988Z"/>
+  </g>
+</svg>

@@ -1,14 +1,14 @@
 import { Routes,Route } from 'react-router-dom'
 import Login from './components/pages/login/Login'
 import './App.css'
-import { ModalClient } from './components/organisms/modal-client/ModalClient'
+import { ModalCreateClient } from './components/templates/modal-create-client/ModalCreateClient'
 
 function App() {
 
   return (
     <>
       <Routes>
-        <Route path="/" element={<ModalClient />} />
+        <Route path="/" element={<ModalCreateClient />} />
         <Route path="/login" element={<Login />} />
       </Routes>
     </>

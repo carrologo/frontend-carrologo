@@ -8,7 +8,7 @@ export default function loginForm () {
       <img src="/public/svg/logos/login-Banner.webp" alt="logo" className="login-logo" />
       <TextField margin='normal' id="outlined-basic" label="Usuario asignado" variant="outlined" />
       <TextField margin='normal' id="outlined-basic" label="Contraseña asignada" variant="outlined" type='password' />
-      <Button size='large' variant="contained" onClick={()=> {
+      <Button size='large' sx={{m: 2}} variant="contained" onClick={()=> {
         alert("Iniciar sesion")
       }}>Iniciar Sesion</Button>
     </form>

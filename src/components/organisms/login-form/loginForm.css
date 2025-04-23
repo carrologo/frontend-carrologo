@@ -21,3 +21,7 @@ body {
     height: auto;
     padding: 10%;
 }
+
+#outlined-basic{
+    background-color: #EAF4F5;
+}

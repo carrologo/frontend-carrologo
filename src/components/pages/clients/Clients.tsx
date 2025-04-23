@@ -1,14 +1,12 @@
 import DataTable from "../../organisms/data-table/dataTable";
-
+import "./Clients.css";
 
 const Clients = () => {
 
   return( 
     
-    <main className="clients">
-      <div className="clients-header">
+    <main className="clients-container">
         <DataTable/>
-      </div>
     </main>
   )
 }

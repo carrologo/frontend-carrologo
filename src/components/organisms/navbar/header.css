@@ -34,7 +34,7 @@ nav {
 }
 
 .nav-links a {
-    color: var(--color-0);
+    color: #ffffff;
     text-decoration: none;
     font-weight: 500;
 }
@@ -45,9 +45,10 @@ nav {
 
 /* Burger Button */
 .burger-btn {
+    border-radius: 1px;
+    border-color: #0071BC;
     display: none;
-    background: none;
-    border: none;
+    background: #ffffff;
     cursor: pointer;
     z-index: 20;
 }
@@ -62,6 +63,7 @@ nav {
     background: var(--color-0);
     border-radius: 2px;
     transition: transform 0.3s ease;
+    color: #ffffff;
 }
 
 .burger::before {
@@ -73,7 +75,7 @@ nav {
 }
 
 .burger.open {
-    background: transparent;
+    background: #ffffff;
 }
 .burger.open::before {
     transform: rotate(45deg) translate(5px, 5px);
@@ -106,6 +108,8 @@ nav {
     .nav-links.open {
         opacity: 1;
         pointer-events: auto;
+        background-color: #0071BC;
+        border-radius: 0.5rem;
     }
 
     .nav-links a {

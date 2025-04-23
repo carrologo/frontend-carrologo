@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 // Define a generic type for the response data
 interface ApiResponse<T> {
@@ -20,7 +20,9 @@ export const doPost = async <T, D>(
 ): Promise<ApiResponse<T>> => {
   try {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
-    const url = resource.startsWith('/') ? `${baseUrl}${resource}` : `${baseUrl}/${resource}`;
+    const url = resource.startsWith("/")
+      ? `${baseUrl}${resource}`
+      : `${baseUrl}/${resource}`;
     const response: ApiResponse<T> = await axios.post(url, data);
     return {
       data: response.data,
@@ -30,7 +32,27 @@ export const doPost = async <T, D>(
   } catch (error) {
     const axiosError = error as { response: { data: ApiError } };
     throw new Error(
-      axiosError.response?.data?.message || 'Error performing POST request'
+      axiosError.response?.data?.message || "Error performing POST request"
+    );
+  }
+};
+
+export const doGet = async <T>(resource: string): Promise<ApiResponse<T>> => {
+  try {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+    const url = resource.startsWith("/")
+      ? `${baseUrl}${resource}`
+      : `${baseUrl}/${resource}`;
+    const response: ApiResponse<T> = await axios.get(url);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+    };
+  } catch (error) {
+    const axiosError = error as { response: { data: ApiError } };
+    throw new Error(
+      axiosError.response?.data?.message || "Error performing GET request"
     );
   }
 };

@@ -15,6 +15,13 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Mobile */
+@media (max-width: 768px) {
+  :root {
+    background-image: url('/svg/backgrounds/background-mobile.webp');
+  }
+}
+
 a {
   font-weight: 500;
   color: #646cff;

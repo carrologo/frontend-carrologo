@@ -31,6 +31,8 @@ nav {
 .nav-links {
     display: flex;
     gap: 1rem;
+    justify-content: center;
+    flex: 1;
 }
 
 .nav-links a {

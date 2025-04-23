@@ -3,6 +3,7 @@ import DataTable from "../../organisms/data-table/dataTable";
 import { getClients } from "../../../services/clients.service";
 import { ClientsTableData } from "../../../interfaces/clients.interface";
 
+import "./Clients.css";
 
 const Clients = () => {
 

@@ -27,7 +27,7 @@ const Header = () => {
         <nav ref={navRef}>
           <div className="logo-container">
             <img
-              src="/public/svg/logos/logoHeader.webp"
+              src="/svg/logos/logoHeader.webp"
               alt="Logo"
               className="logo"
             />

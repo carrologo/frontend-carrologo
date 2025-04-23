@@ -1,4 +1,5 @@
-import { doPost } from "../core/api/api";
+import { doGet, doPost } from "../core/api/api";
+import { ClientsTableData } from "../interfaces/clients.interface";
 
 export interface CreateClientPost {
   name: string;
@@ -9,14 +10,21 @@ export interface CreateClientPost {
   contact: string;
   comment: string;
 }
+
 export const createClient = async <T>( values: CreateClientPost ): Promise<void> => {
-  console.log('Creating client:', values);
-  
   try {
-    const response = await doPost<T, typeof values>('/clients', values);
-    console.log('POST successful:', response.data);
+    await doPost<T, typeof values>('/clients', values);
   } catch (error) {
     console.error('POST failed:', error);
     throw error;
   }
 };
+
+export const getClients = async (): Promise<ClientsTableData> => {
+  try {
+    const response = await doGet<ClientsTableData>('/clients');
+    return response.data;
+  } catch (error) {
+    return error as ClientsTableData;
+  }
+}

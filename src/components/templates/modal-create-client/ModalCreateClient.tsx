@@ -7,10 +7,21 @@ const fields: FieldConfig[] = [
   { name: "name", label: "Nombre", type: "text", required: true },
   { name: "lastName", label: "Apellido", type: "text", required: true },
   { name: "identification", label: "Identificación", type: "text" },
-  { name: "birthdate", label: "Fecha de Nacimiento", type: "date", required: true },
+  {
+    name: "birthdate",
+    label: "Fecha de Nacimiento",
+    type: "date",
+    required: true,
+  },
   { name: "contact", label: "Celular", type: "tel", required: true },
   { name: "email", label: "Correo", type: "email", required: true },
-  { name: "comment", label: "Comentarios", type: "text", multiline: true, rows: 4 },
+  {
+    name: "comment",
+    label: "Comentarios",
+    type: "text",
+    multiline: true,
+    rows: 4,
+  },
 ];
 
 const validationSchema = Yup.object({
@@ -27,7 +38,7 @@ const validationSchema = Yup.object({
   email: Yup.string()
     .email("El correo electrónico no es válido")
     .required("El correo electrónico es obligatorio"),
-  comment: Yup.string(),
+  comment: Yup.string().required("Los comentarios son obligatorios"),
 });
 
 const initialValues = {
@@ -40,12 +51,15 @@ const initialValues = {
   comment: "",
 };
 
-export const ModalCreateClient = () => (
+export const ModalCreateClient = ({ onClose }: { onClose: () => void }) => (
   <ModalForm
     fields={fields}
     validationSchema={validationSchema}
     initialValues={initialValues}
     title="Crear Cliente"
-    onSubmit={(values) => createClient(values)}
+    onSubmit={(values) => {
+      createClient(values);
+    }}
+    onClose={onClose}
   />
 );

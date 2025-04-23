@@ -6,7 +6,8 @@ import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ClientsTableData } from "../../../interfaces/clients.interface";
 import { useState } from "react";
-import { Button } from "@mui/material";
+import { Button, Dialog, Typography } from "@mui/material";
+import { ModalCreateClient } from "../../templates/modal-create-client/ModalCreateClient";
 
 const columns: GridColDef[] = [
   { field: "name", headerName: "Nombre", width: 150 },
@@ -65,7 +66,7 @@ export default function DataTable({
 }: {
   readonly dataTable: ClientsTableData;
 }) {
-
+  const [openCreateModal, setOpenCreateModal] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -74,7 +75,10 @@ export default function DataTable({
   return (
     <div className="datatable-container">
       <Paper sx={{ height: "400px", width: "100%" }}>
-        <Button sx={{m: 2}} variant="contained" onClick={()=> {}}>Agregar Cliente</Button>
+        <Typography variant="h1" component="div" fontSize={30} sx={{ mt: 2 }} align="center" gutterBottom>
+          Clientes
+        </Typography>
+        <Button sx={{m: 2}} variant="contained" onClick={()=> setOpenCreateModal(true)}>Agregar Cliente</Button>
         <DataGrid
           rows={dataTable.data}
           columns={columns}
@@ -87,6 +91,14 @@ export default function DataTable({
           sx={{ border: 0, overflow: "auto" }}
         />
       </Paper>
+
+      <Dialog
+        open={openCreateModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <ModalCreateClient onClose={() => setOpenCreateModal(false)} />
+      </Dialog>
     </div>
   );
 }

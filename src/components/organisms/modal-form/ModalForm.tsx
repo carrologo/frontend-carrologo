@@ -7,9 +7,9 @@ import "dayjs/locale/es";
 import { Box, Button, TextField, Typography, Grid } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
+import ClearIcon from '@mui/icons-material/Clear';
 
 dayjs.locale("es");
-
 
 // Interface for ModalForm props
 interface ModalFormProps {
@@ -18,6 +18,7 @@ interface ModalFormProps {
   initialValues: any;
   title: string;
   onSubmit: (values: any) => void;
+  onClose: () => void;
 }
 
 const ModalForm = ({
@@ -26,6 +27,7 @@ const ModalForm = ({
   initialValues,
   title,
   onSubmit,
+  onClose,
 }: ModalFormProps) => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
@@ -45,11 +47,15 @@ const ModalForm = ({
           });
           onSubmit(formattedValues);
           setSubmitting(false);
+          onClose();
         }}
       >
         {({ errors, touched, setFieldValue, isSubmitting, resetForm }) => (
           <Form>
             <Box sx={{ p: { xs: 3, md: 5 }, bgcolor: "background.paper" }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <ClearIcon sx={{cursor: 'pointer'}} onClick={onClose}/>
+              </Box>
               <Typography
                 variant="h4"
                 color="text.primary"
@@ -66,17 +72,30 @@ const ModalForm = ({
                   >
                     {field.type === "date" ? (
                       <Field name={field.name}>
-                        {({ field }: { field: { value: Dayjs | null, name: string, label: string, required: boolean } }) => (
+                        {({
+                          field,
+                        }: {
+                          field: {
+                            value: Dayjs | null;
+                            name: string;
+                            label: string;
+                            required: boolean;
+                          };
+                        }) => (
                           <DatePicker
                             label={field.label}
                             value={field.value}
-                            onChange={(value) => setFieldValue(field.name, value)}
+                            onChange={(value) =>
+                              setFieldValue(field.name, value)
+                            }
                             slotProps={{
                               textField: {
                                 variant: "outlined",
                                 required: field.required,
                                 fullWidth: true,
-                                error: touched[field.name] && Boolean(errors[field.name]),
+                                error:
+                                  touched[field.name] &&
+                                  Boolean(errors[field.name]),
                                 helperText:
                                   touched[field.name] && errors[field.name]
                                     ? String(errors[field.name])
@@ -99,7 +118,9 @@ const ModalForm = ({
                         rows={field.rows}
                         fullWidth
                         value={field.disabled ? field.value : undefined}
-                        error={touched[field.name] && Boolean(errors[field.name])}
+                        error={
+                          touched[field.name] && Boolean(errors[field.name])
+                        }
                         helperText={
                           touched[field.name] && errors[field.name]
                             ? String(errors[field.name])
@@ -122,7 +143,10 @@ const ModalForm = ({
                     <Button
                       variant="contained"
                       color="error"
-                      onClick={() => resetForm()}
+                      onClick={() => {
+                        resetForm();
+                        onClose();
+                      }}
                       disabled={isSubmitting}
                     >
                       Cancelar

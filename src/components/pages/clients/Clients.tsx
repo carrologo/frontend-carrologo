@@ -7,12 +7,12 @@ import { ClientsTableData } from "../../../interfaces/clients.interface";
 const Clients = () => {
 
   const [clients, setClients] = useState<ClientsTableData>({} as ClientsTableData);
+  const fetchClients = async () => {
+    const clientsData = await getClients();
+    setClients(clientsData);
+  };
 
   useEffect(() => {
-    const fetchClients = async () => {
-      const clientsData = await getClients();
-      setClients(clientsData);
-    };
     fetchClients();
   }, []);
 

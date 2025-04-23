@@ -1,0 +1,115 @@
+header {
+    background-color: #0071BC;
+    padding: 1rem;
+   
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-container span {
+    color: var(--color-0);
+    margin-left: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.logo {
+    height: 50px;
+}
+
+/* Nav Links */
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-links a {
+    color: var(--color-0);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav-links a.active {
+    border-bottom: 2px solid var(--color-0);
+}
+
+/* Burger Button */
+.burger-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.burger,
+.burger::before,
+.burger::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: var(--color-0);
+    border-radius: 2px;
+    transition: transform 0.3s ease;
+}
+
+.burger::before {
+    transform: translateY(-7px);
+}
+
+.burger::after {
+    transform: translateY(4px);
+}
+
+.burger.open {
+    background: transparent;
+}
+.burger.open::before {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+.burger.open::after {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .burger-btn {
+        display: block;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        flex-direction: column;
+        background: var(--color-2);
+        width: 200px;
+        padding: 0.5rem 0;
+        box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 2;
+        transition: opacity 0.3s ease;
+    }
+
+    .nav-links.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .nav-links a {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+}

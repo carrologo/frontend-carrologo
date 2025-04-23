@@ -1,10 +1,4 @@
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Altura completa de la ventana */
-    margin: 0; /* Elimina márgenes predeterminados */
-}
+
 .login-form {
     display: flex;
     flex-direction: column;

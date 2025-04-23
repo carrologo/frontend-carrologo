@@ -1,4 +1,4 @@
-import LoginForm from '../../organisms/loginForm';
+import LoginForm from '../../organisms/loginForm/loginForm';
 
 
 const Login = () => {

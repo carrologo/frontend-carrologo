@@ -18,7 +18,7 @@ const Clients = () => {
   }, []);
 
   return( 
-    <main className="clients">
+    <main className="clients-container">
       <div className="clients-header">
         <DataTable
           dataTable={clients}

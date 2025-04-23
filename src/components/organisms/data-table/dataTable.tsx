@@ -74,7 +74,7 @@ export default function DataTable({
 
   return (
     <div className="datatable-container">
-      <Paper sx={{ height: "400px", width: "100%" }}>
+      <Paper sx={{ height: "70vh", width: "100%" }}>
         <Typography variant="h1" component="div" fontSize={30} sx={{ mt: 2 }} align="center" gutterBottom>
           Clientes
         </Typography>

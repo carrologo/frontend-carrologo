@@ -28,3 +28,12 @@ export const getClients = async (): Promise<ClientsTableData> => {
     return error as ClientsTableData;
   }
 }
+
+export const getClientById = async (id: string): Promise<ClientsTableData> => {
+  try {
+    const response = await doGet<ClientsTableData>(`/client/${id}`);
+    return response.data;
+  } catch (error) {
+    return error as ClientsTableData;
+  }
+}

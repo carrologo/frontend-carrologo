@@ -8,6 +8,9 @@ import { ClientsTableData } from "../../../interfaces/clients.interface";
 import { useState } from "react";
 import { Button, Dialog, Typography } from "@mui/material";
 import { ModalCreateClient } from "../../templates/modal-create-client/ModalCreateClient";
+import ViewClient from "../view-client/viewClient";
+
+
 
 const columns: GridColDef[] = [
   { field: "name", headerName: "Nombre", width: 150 },
@@ -23,7 +26,7 @@ const columns: GridColDef[] = [
     width: 100,
     renderCell: (params) => (
       <span style={{ color: params.value ? "green" : "red", fontWeight: 500 }}>
-        {params.value ? "Activo" : "Inactivo"}
+        {params.value === true ? "Activo" : "Inactivo"}
       </span>
     ),
   },
@@ -67,10 +70,18 @@ export default function DataTable({
   readonly dataTable: ClientsTableData;
 }) {
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
+
+  const handleViewClient = (row: any) => {
+    setSelectedClient(row); // Ensure all client data is set
+    setOpenViewModal(true);
+  };
 
   return (
     <div className="datatable-container">
@@ -78,12 +89,19 @@ export default function DataTable({
         <Typography variant="h1" component="div" fontSize={30} sx={{ mt: 2 }} align="center" gutterBottom>
           Clientes
         </Typography>
+
         <Button sx={{m: 2}} variant="contained" onClick={()=> setOpenCreateModal(true)}>Agregar Cliente</Button>
+        
         <DataGrid
           rows={dataTable.data}
           columns={columns}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          onCellClick={(params) => {
+            if (params.field === 'name' || params.field === 'lastName') {
+              handleViewClient(params.row);
+          }
+        }}
           initialState={{
             sorting: { sortModel: [{ field: "name", sort: "asc" }] },
           }}
@@ -92,6 +110,7 @@ export default function DataTable({
         />
       </Paper>
 
+
       <Dialog
         open={openCreateModal}
         maxWidth="md"
@@ -99,6 +118,28 @@ export default function DataTable({
       >
         <ModalCreateClient onClose={() => setOpenCreateModal(false)} />
       </Dialog>
+      <Dialog open={openViewModal} 
+      maxWidth="md" 
+      fullWidth>
+        {selectedClient && (
+          <ViewClient
+            fields={[
+              { name: "name", label: "Nombre", type: "text" },
+              { name: "lastName", label: "Apellido", type: "text" },
+              { name: "email", label: "Correo", type: "email" },
+              { name: "identification", label: "Identificación", type: "text" },
+              { name: "birthdate", label: "Nacimiento", type: "date" },
+              { name: "contact", label: "Contacto", type: "tel" },
+              { name: "comment", label: "Observaciones", type: "text", multiline: true, rows: 3 },
+              { name: "isActive", label: "Estado", type: "text" },
+            ]}
+            initialValues={selectedClient}
+            title="Detalles del Cliente"
+            onClose={() => setOpenViewModal(false)}
+          />
+        )}
+      </Dialog>
+
     </div>
   );
 }

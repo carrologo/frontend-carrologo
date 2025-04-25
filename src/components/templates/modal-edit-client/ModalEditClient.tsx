@@ -3,6 +3,7 @@ import * as Yup from "yup";
 import ModalForm from "../../organisms/modal-form/ModalForm";
 import { updateClient } from "../../../services/clients.service";
 import dayjs from "dayjs"; 
+import { Client } from "../../../interfaces/clients.interface";
 
 const fields: FieldConfig[] = [
   { name: "name", label: "Nombre", type: "text", required: true },
@@ -47,16 +48,16 @@ export const ModalEditClient = ({
   clientData,
 }: {
   onClose: () => void;
-  clientData: any;
+  clientData: Client;
 }) => {
   const initialValues = {
-    name: clientData.name || "",
-    lastName: clientData.lastName || "",
-    email: clientData.email || "",
-    identification: clientData.identification || "",
+    name: clientData.name ?? "",
+    lastName: clientData.lastName ?? "",
+    email: clientData.email ?? "",
+    identification: clientData.identification ?? "",
     birthdate: clientData.birthdate ? dayjs(clientData.birthdate) : null,
-    contact: clientData.contact || "",
-    comment: clientData.comment || "",
+    contact: clientData.contact ?? "",
+    comment: clientData.comment ?? "",
   };
 
   return (

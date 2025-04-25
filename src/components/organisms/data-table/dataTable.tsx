@@ -26,75 +26,6 @@ import { ModalViewClient } from "../../templates/modal-view-client/ModalViewClie
 import { ModalEditClient } from "../../templates/modal-edit-client/ModalEditClient";
 import { getClientById } from "../../../services/clients.service";
 
-const columns: GridColDef[] = [
-  { field: "name", headerName: "Nombre", width: 150 },
-  { field: "lastName", headerName: "Apellido", width: 150 },
-  { field: "email", headerName: "Correo", width: 300 },
-  { field: "identification", headerName: "Identificación", width: 140 },
-  {
-    field: "birthdate",
-    headerName: "Fecha de Nacimiento",
-    width: 140,
-    renderCell: (params) =>
-      params.value ? new Date(params.value).toLocaleDateString() : "",
-  },
-  { field: "contact", headerName: "Contacto", width: 150 },
-  { field: "comment", headerName: "Observaciones", width: 230 },
-  {
-    field: "isActive",
-    headerName: "Estado",
-    width: 100,
-    renderCell: (params) => (
-      <span style={{ color: params.value ? "green" : "red", fontWeight: 500 }}>
-        {params.value === true ? "Activo" : "Inactivo"}
-      </span>
-    ),
-  },
-  {
-    field: "edit",
-    headerName: "",
-    width: 60,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => (
-      <IconButton
-        aria-label="editar"
-        color="primary"
-        onClick={() => console.log("Editar", params.row)}
-      >
-        <ModeEditIcon />
-      </IconButton>
-    ),
-  },
-  {
-    field: "delete",
-    headerName: "",
-    width: 60,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => (
-      <IconButton
-        aria-label="eliminar"
-        color="error"
-        onClick={() => console.log("Eliminar", params.row)}
-      >
-        <DeleteIcon />
-      </IconButton>
-    ),
-  },
-];
-
-// Opciones de búsqueda con etiquetas para el label
-const searchOptions = [
-  { value: "fullName", label: "Nombre completo" },
-  { value: "email", label: "Correo" },
-  { value: "identification", label: "Identificación" },
-  { value: "birthdate", label: "Fecha de Nacimiento" },
-  { value: "contact", label: "Contacto" },
-  { value: "comment", label: "Observaciones" },
-  { value: "isActive", label: "Estado" },
-];
-
 interface DataTableProps {
   readonly dataTable: ClientsTableData;
   onClientCreated: () => void;
@@ -106,15 +37,84 @@ export default function DataTable({
 }: Readonly<DataTableProps>) {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("fullName"); // Campo de búsqueda predeterminado
-  const [openEditModal, setOpenEditModal] = useState(false);
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
+
+  const columns: GridColDef[] = [
+    { field: "name", headerName: "Nombre", width: 150 },
+    { field: "lastName", headerName: "Apellido", width: 150 },
+    { field: "email", headerName: "Correo", width: 300 },
+    { field: "identification", headerName: "Identificación", width: 140 },
+    {
+      field: "birthdate",
+      headerName: "Fecha de Nacimiento",
+      width: 140,
+      renderCell: (params) =>
+        params.value ? new Date(params.value).toLocaleDateString() : "",
+    },
+    { field: "contact", headerName: "Contacto", width: 150 },
+    { field: "comment", headerName: "Observaciones", width: 230 },
+    {
+      field: "isActive",
+      headerName: "Estado",
+      width: 100,
+      renderCell: (params) => (
+        <span style={{ color: params.value ? "green" : "red", fontWeight: 500 }}>
+          {params.value === true ? "Activo" : "Inactivo"}
+        </span>
+      ),
+    },
+    {
+      field: "edit",
+      headerName: "",
+      width: 60,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <IconButton
+          aria-label="editar"
+          color="primary"
+          onClick={() => handleEditClient(params.row.id)}
+        >
+          <ModeEditIcon />
+        </IconButton>
+      ),
+    },
+    {
+      field: "delete",
+      headerName: "",
+      width: 60,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <IconButton
+          aria-label="eliminar"
+          color="error"
+          onClick={() => console.log("Eliminar", params.row)}
+        >
+          <DeleteIcon />
+        </IconButton>
+      ),
+    },
+  ];
+  
+  // Opciones de búsqueda con etiquetas para el label
+  const searchOptions = [
+    { value: "fullName", label: "Nombre completo" },
+    { value: "email", label: "Correo" },
+    { value: "identification", label: "Identificación" },
+    { value: "birthdate", label: "Fecha de Nacimiento" },
+    { value: "contact", label: "Contacto" },
+    { value: "comment", label: "Observaciones" },
+    { value: "isActive", label: "Estado" },
+  ];
 
   // Filtrar datos según el término de búsqueda y el campo seleccionado
   const filteredRows = useMemo(() => {
@@ -143,12 +143,22 @@ export default function DataTable({
     try {
       const client = await getClientById(id);
       setSelectedClient(client);
-      console.log(client);
       setOpenViewModal(true);
     } catch (error) {
       console.error("Error al obtener cliente:", error);
     }
   };
+
+  const handleEditClient = async (id: string) => {
+    try {
+      const client = await getClientById(id);
+      setSelectedClient(client);
+      setOpenEditModal(true);
+    } catch (error) {
+      console.error("Error al obtener cliente para editar:", error);
+    }
+  };
+
 
   return (
     <div className="datatable-container">
@@ -263,12 +273,10 @@ export default function DataTable({
       </Dialog>
 
       <Dialog open={openEditModal} maxWidth="md" fullWidth>
-        {selectedClient && (
           <ModalEditClient
             clientData={selectedClient}
             onClose={() => setOpenEditModal(false)}
           />
-        )}
       </Dialog>
     </div>
   );

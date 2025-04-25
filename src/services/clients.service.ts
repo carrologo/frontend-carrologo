@@ -39,7 +39,7 @@ export const getClientById = async (id: string): Promise<Client> => {
 }
 
 export const updateClient = async <T>(
-  id: string,
+  id: number,
   values: CreateClientPost
 ): Promise<void> => {
   try {

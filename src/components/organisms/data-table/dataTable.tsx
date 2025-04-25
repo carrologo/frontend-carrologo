@@ -8,9 +8,8 @@ import { ClientsTableData } from "../../../interfaces/clients.interface";
 import { useState } from "react";
 import { Button, Dialog, Typography } from "@mui/material";
 import { ModalCreateClient } from "../../templates/modal-create-client/ModalCreateClient";
-import ViewClient from "../view-client/viewClient";
-
-
+import { ModalViewClient } from "../../templates/modal-view-client/ModalViewClient";
+import { getClientById } from "../../../services/clients.service";
 
 const columns: GridColDef[] = [
   { field: "name", headerName: "Nombre", width: 150 },
@@ -71,18 +70,22 @@ export default function DataTable({
 }) {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [selectedClient, setSelectedClient] = useState<any>(null); // Add state for selected client
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
 
-  const handleViewClient = (row: any) => {
-    setSelectedClient(row); // Ensure all client data is set
-    setOpenViewModal(true);
+  const handleViewClient = async (id: string) => {
+    try {
+      const client = await getClientById(id);
+      setSelectedClient(client);
+      setOpenViewModal(true);
+    } catch (error) {
+      console.error("Error al obtener cliente:", error);
+    }
   };
-
   return (
     <div className="datatable-container">
       <Paper sx={{ height: "70vh", width: "100%" }}>
@@ -99,9 +102,9 @@ export default function DataTable({
           onPaginationModelChange={setPaginationModel}
           onCellClick={(params) => {
             if (params.field === 'name' || params.field === 'lastName') {
-              handleViewClient(params.row);
-          }
-        }}
+              handleViewClient(params.row.id);
+            }
+          }}
           initialState={{
             sorting: { sortModel: [{ field: "name", sort: "asc" }] },
           }}
@@ -118,26 +121,15 @@ export default function DataTable({
       >
         <ModalCreateClient onClose={() => setOpenCreateModal(false)} />
       </Dialog>
-      <Dialog open={openViewModal} 
-      maxWidth="md" 
-      fullWidth>
-        {selectedClient && (
-          <ViewClient
-            fields={[
-              { name: "name", label: "Nombre", type: "text" },
-              { name: "lastName", label: "Apellido", type: "text" },
-              { name: "email", label: "Correo", type: "email" },
-              { name: "identification", label: "Identificación", type: "text" },
-              { name: "birthdate", label: "Nacimiento", type: "date" },
-              { name: "contact", label: "Contacto", type: "tel" },
-              { name: "comment", label: "Observaciones", type: "text", multiline: true, rows: 3 },
-              { name: "isActive", label: "Estado", type: "text" },
-            ]}
-            initialValues={selectedClient}
-            title="Detalles del Cliente"
-            onClose={() => setOpenViewModal(false)}
-          />
-        )}
+      <Dialog
+        open={openViewModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <ModalViewClient
+          clientData={selectedClient} 
+          onClose={() => setOpenViewModal(false)}
+        />
       </Dialog>
 
     </div>

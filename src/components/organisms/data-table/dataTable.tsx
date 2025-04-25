@@ -8,6 +8,8 @@ import { ClientsTableData } from "../../../interfaces/clients.interface";
 import { useState } from "react";
 import { Button, Dialog, Typography } from "@mui/material";
 import { ModalCreateClient } from "../../templates/modal-create-client/ModalCreateClient";
+import { ModalViewClient } from "../../templates/modal-view-client/ModalViewClient";
+import { getClientById } from "../../../services/clients.service";
 
 const columns: GridColDef[] = [
   { field: "name", headerName: "Nombre", width: 150 },
@@ -23,7 +25,7 @@ const columns: GridColDef[] = [
     width: 100,
     renderCell: (params) => (
       <span style={{ color: params.value ? "green" : "red", fontWeight: 500 }}>
-        {params.value ? "Activo" : "Inactivo"}
+        {params.value === true ? "Activo" : "Inactivo"}
       </span>
     ),
   },
@@ -67,23 +69,42 @@ export default function DataTable({
   readonly dataTable: ClientsTableData;
 }) {
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null); // Add state for selected client
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
 
+  const handleViewClient = async (id: string) => {
+    try {
+      const client = await getClientById(id);
+      setSelectedClient(client);
+      setOpenViewModal(true);
+    } catch (error) {
+      console.error("Error al obtener cliente:", error);
+    }
+  };
   return (
     <div className="datatable-container">
       <Paper sx={{ height: "70vh", width: "100%" }}>
         <Typography variant="h1" component="div" fontSize={30} sx={{ mt: 2 }} align="center" gutterBottom>
           Clientes
         </Typography>
+
         <Button sx={{m: 2}} variant="contained" onClick={()=> setOpenCreateModal(true)}>Agregar Cliente</Button>
+        
         <DataGrid
           rows={dataTable.data}
           columns={columns}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          onCellClick={(params) => {
+            if (params.field === 'name' || params.field === 'lastName') {
+              handleViewClient(params.row.id);
+            }
+          }}
           initialState={{
             sorting: { sortModel: [{ field: "name", sort: "asc" }] },
           }}
@@ -92,6 +113,7 @@ export default function DataTable({
         />
       </Paper>
 
+
       <Dialog
         open={openCreateModal}
         maxWidth="md"
@@ -99,6 +121,17 @@ export default function DataTable({
       >
         <ModalCreateClient onClose={() => setOpenCreateModal(false)} />
       </Dialog>
+      <Dialog
+        open={openViewModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <ModalViewClient
+          clientData={selectedClient} 
+          onClose={() => setOpenViewModal(false)}
+        />
+      </Dialog>
+
     </div>
   );
 }

@@ -111,7 +111,7 @@ const ModalForm = ({
                         multiline={field.multiline}
                         rows={field.rows}
                         fullWidth
-                        value={field.disabled ? field.value : undefined}
+                        // value={field.disabled ? field.value : undefined}
                         error={
                           touched[field.name] && Boolean(errors[field.name])
                         }

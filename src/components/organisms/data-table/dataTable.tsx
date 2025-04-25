@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import { ModalCreateClient } from "../../templates/modal-create-client/ModalCreateClient";
 import { ModalViewClient } from "../../templates/modal-view-client/ModalViewClient";
+import { ModalEditClient } from "../../templates/modal-edit-client/ModalEditClient";
 import { getClientById } from "../../../services/clients.service";
 
 const columns: GridColDef[] = [
@@ -108,6 +109,8 @@ export default function DataTable({
   const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("fullName"); // Campo de búsqueda predeterminado
+  const [openEditModal, setOpenEditModal] = useState(false);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -257,6 +260,15 @@ export default function DataTable({
           clientData={selectedClient}
           onClose={() => setOpenViewModal(false)}
         />
+      </Dialog>
+
+      <Dialog open={openEditModal} maxWidth="md" fullWidth>
+        {selectedClient && (
+          <ModalEditClient
+            clientData={selectedClient}
+            onClose={() => setOpenEditModal(false)}
+          />
+        )}
       </Dialog>
     </div>
   );

@@ -37,21 +37,30 @@ export const ModalViewClient = ({
 }) => {
   console.log("Valor de birthdate:", clientData?.birthdate);
   console.log("Tipo de birthdate:", typeof clientData?.birthdate);
-  console.log("Valor de clientData:", clientData?.name);
-
+  console.log("Valor de clientData:", typeof clientData?.name);
+  console.log("Datos completos de clientData:", clientData);
+  
   const initialValues = {
-    name: clientData?.name,
-    lastName: clientData?.lastName,
-    email: clientData?.email ,
-    identification: clientData?.identification ,
+    name: clientData?.name?? "",
+    lastName: clientData?.lastName?? "",
+    email: clientData?.email ?? "",
+    identification: clientData?.identification?? "" ,
     birthdate: clientData?.birthdate ? dayjs(clientData.birthdate) : null,
-    contact: clientData?.contact ,
-    comment: clientData?.comment ,
+    contact: clientData?.contact?? "" ,
+    comment: clientData?.comment ?? "",
   };
+
+  const fieldsWithValues: FieldConfig[] = fields.map((field) => ({
+    ...field,
+    value:
+      field.name === "birthdate" && clientData?.birthdate
+        ? dayjs(clientData.birthdate)
+        : clientData?.[field.name] ?? "",
+  }));
 
   return (
     <ModalForm
-      fields={fields}
+      fields={fieldsWithValues}
       validationSchema={Yup.object({})} // Desactivado, no debe validar nada
       initialValues={initialValues}
       title="Detalle del Cliente"

@@ -62,6 +62,7 @@ export const ModalViewClient = ({
       title="Detalle del Cliente"
       onSubmit={() => {}} 
       onClose={onClose}
+      cancelDisabled
     />
   );
 };

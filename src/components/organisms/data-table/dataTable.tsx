@@ -5,6 +5,7 @@ import "./dataTable.css";
 import IconButton from "@mui/material/IconButton";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CheckIcon from "@mui/icons-material/Check";
 import {
   Client,
   ClientsTableData,
@@ -24,20 +25,21 @@ import {
 import { ModalCreateClient } from "../../templates/modal-create-client/ModalCreateClient";
 import { ModalViewClient } from "../../templates/modal-view-client/ModalViewClient";
 import { ModalEditClient } from "../../templates/modal-edit-client/ModalEditClient";
-import { getClientById } from "../../../services/clients.service";
+import ModalDeleteClient from "../../templates/modal-delete-client/ModalDeleteClient";
 
 interface DataTableProps {
   readonly dataTable: ClientsTableData;
-  onClientCreated: () => void;
+  onClientsUpdated: () => void;
 }
 
 export default function DataTable({
   dataTable,
-  onClientCreated,
+  onClientsUpdated,
 }: Readonly<DataTableProps>) {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("fullName"); // Campo de búsqueda predeterminado
@@ -64,10 +66,12 @@ export default function DataTable({
     {
       field: "isActive",
       headerName: "Estado",
-      width: 100,
+      width: 140,
       renderCell: (params) => (
-        <span style={{ color: params.value ? "green" : "red", fontWeight: 500 }}>
-          {params.value === true ? "Activo" : "Inactivo"}
+        <span
+          style={{ color: params.value ? "green" : "red", fontWeight: 500 }}
+        >
+          {params.value === true ? "Activo" : "Deshabilitado"}
         </span>
       ),
     },
@@ -81,7 +85,7 @@ export default function DataTable({
         <IconButton
           aria-label="editar"
           color="primary"
-          onClick={() => handleEditClient(params.row.id)}
+          onClick={() => handleEditClient(params.row)}
         >
           <ModeEditIcon />
         </IconButton>
@@ -95,16 +99,16 @@ export default function DataTable({
       filterable: false,
       renderCell: (params) => (
         <IconButton
-          aria-label="eliminar"
-          color="error"
-          onClick={() => console.log("Eliminar", params.row)}
+          aria-label={params.row.isActive ? "desactivar cliente" : "activar cliente"}
+          color={params.row.isActive ? "error" : "success"}
+          onClick={() => handleOpenDeleteModal(params.row)}
         >
-          <DeleteIcon />
+          {params.row.isActive ? <DeleteIcon /> : <CheckIcon />}
         </IconButton>
       ),
     },
   ];
-  
+
   // Opciones de búsqueda con etiquetas para el label
   const searchOptions = [
     { value: "fullName", label: "Nombre completo" },
@@ -139,9 +143,8 @@ export default function DataTable({
     });
   }, [dataTable.data, searchTerm, searchField]);
 
-  const handleViewClient = async (id: string) => {
+  const handleViewClient = async (client: Client) => {
     try {
-      const client = await getClientById(id);
       setSelectedClient(client);
       setOpenViewModal(true);
     } catch (error) {
@@ -149,9 +152,8 @@ export default function DataTable({
     }
   };
 
-  const handleEditClient = async (id: string) => {
+  const handleEditClient = async (client: Client) => {
     try {
-      const client = await getClientById(id);
       setSelectedClient(client);
       setOpenEditModal(true);
     } catch (error) {
@@ -159,6 +161,10 @@ export default function DataTable({
     }
   };
 
+  const handleOpenDeleteModal = (client: Client) => {
+    setSelectedClient(client);
+    setOpenDeleteModal(true);
+  };
 
   return (
     <div className="datatable-container">
@@ -249,7 +255,7 @@ export default function DataTable({
           onPaginationModelChange={setPaginationModel}
           onCellDoubleClick={(params) => {
             if (params.field === "delete" || params.field === "edit") return;
-            handleViewClient(params.row.id);
+            handleViewClient(params.row);
           }}
           initialState={{
             sorting: { sortModel: [{ field: "name", sort: "asc" }] },
@@ -262,7 +268,7 @@ export default function DataTable({
       <Dialog open={openCreateModal} maxWidth="md" fullWidth>
         <ModalCreateClient
           onClose={() => setOpenCreateModal(false)}
-          onClientCreated={onClientCreated}
+          onClientCreated={onClientsUpdated}
         />
       </Dialog>
       <Dialog open={openViewModal} maxWidth="md" fullWidth>
@@ -273,10 +279,20 @@ export default function DataTable({
       </Dialog>
 
       <Dialog open={openEditModal} maxWidth="md" fullWidth>
-          <ModalEditClient
-            clientData={selectedClient}
-            onClose={() => setOpenEditModal(false)}
-          />
+        <ModalEditClient
+          clientData={selectedClient}
+          onClose={() => setOpenEditModal(false)}
+          onEditClient={onClientsUpdated}
+        />
+      </Dialog>
+
+      <Dialog open={openDeleteModal} maxWidth="sm" fullWidth>
+        <ModalDeleteClient
+          open={openDeleteModal}
+          selectedClient={selectedClient}
+          onClose={() => setOpenDeleteModal(false)}
+          onClientUpdated={onClientsUpdated}
+        />
       </Dialog>
     </div>
   );

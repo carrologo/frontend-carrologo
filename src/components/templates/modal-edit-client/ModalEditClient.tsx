@@ -1,7 +1,7 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
 import ModalForm from "../../organisms/modal-form/ModalForm";
-import { updateClient } from "../../../services/clients.service";
+import { CreateClientPost, updateClient } from "../../../services/clients.service";
 import dayjs from "dayjs"; 
 import { Client } from "../../../interfaces/clients.interface";
 
@@ -43,13 +43,14 @@ const validationSchema = Yup.object({
   comment: Yup.string().required("Los comentarios son obligatorios"),
 });
 
-export const ModalEditClient = ({
-  onClose,
-  clientData,
-}: {
-  onClose: () => void;
+interface ModalEditClientProps {
   clientData: Client;
-}) => {
+  onClose: () => void;
+  onEditClient: () => void;
+}
+
+export const ModalEditClient = ({ clientData, onClose, onEditClient }: ModalEditClientProps) => {
+
   const initialValues = {
     name: clientData.name ?? "",
     lastName: clientData.lastName ?? "",
@@ -60,15 +61,22 @@ export const ModalEditClient = ({
     comment: clientData.comment ?? "",
   };
 
+    const handleEditClient = async (data: CreateClientPost) => {
+      try {
+        await updateClient(clientData.id, data);
+        onEditClient();
+      } catch (error) {
+        console.error("Error al crear cliente:", error);
+      }
+    };
+
   return (
     <ModalForm
       fields={fields}
       validationSchema={validationSchema}
       initialValues={initialValues}
       title="Editar Cliente"
-      onSubmit={(values) => {
-        updateClient(clientData.id, values);
-      }}
+      onSubmit={handleEditClient}
       onClose={onClose}
     />
   );

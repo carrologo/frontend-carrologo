@@ -26,7 +26,7 @@ const Clients = () => {
       <div className="clients-header">
         <DataTable
           dataTable={clients}
-          onClientCreated={fetchClients}
+          onClientsUpdated={fetchClients}
         />
       </div>
     </main>

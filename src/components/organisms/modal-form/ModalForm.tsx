@@ -17,6 +17,7 @@ interface ModalFormProps {
   validationSchema: Yup.ObjectSchema<any>;
   initialValues: any;
   title: string;
+  cancelDisabled?: boolean;
   onSubmit: (values: any) => void;
   onClose: () => void;
 }
@@ -26,6 +27,7 @@ const ModalForm = ({
   validationSchema,
   initialValues,
   title,
+  cancelDisabled,
   onSubmit,
   onClose,
 }: ModalFormProps) => {
@@ -134,7 +136,7 @@ const ModalForm = ({
                       mt: 2,
                     }}
                   >
-                    <Button
+                    { !cancelDisabled && <Button
                       variant="contained"
                       color="error"
                       onClick={() => {
@@ -144,7 +146,7 @@ const ModalForm = ({
                       disabled={isSubmitting}
                     >
                       Cancelar
-                    </Button>
+                    </Button>}
                     <Button
                       variant="contained"
                       color="primary"

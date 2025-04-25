@@ -75,7 +75,7 @@ export const doPatch = async <T, D>(
   } catch (error) {
     const axiosError = error as { response: { data: ApiError } };
     throw new Error(
-      axiosError.response.data.message || "Error performing PATCH request"
+      axiosError.response?.data?.message || "Error performing PATCH request"
     );
   }
 };

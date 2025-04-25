@@ -40,7 +40,7 @@ export const getClientById = async (id: string): Promise<Client> => {
 
 export const updateClient = async <T>(
   id: number,
-  values: CreateClientPost
+  values: Partial<CreateClientPost> & { isActive: boolean }
 ): Promise<void> => {
   try {
     await doPatch<T, typeof values>(`/clients/${id}`, values);

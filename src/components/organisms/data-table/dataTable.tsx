@@ -1,4 +1,5 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { esES } from "@mui/x-data-grid/locales";
 import Paper from "@mui/material/Paper";
 import "./dataTable.css";
 import IconButton from "@mui/material/IconButton";
@@ -230,6 +231,7 @@ export default function DataTable({
         <DataGrid
           rows={filteredRows}
           columns={columns}
+          localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           onCellDoubleClick={(params) => {

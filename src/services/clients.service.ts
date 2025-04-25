@@ -1,4 +1,4 @@
-import { doGet, doPost } from "../core/api/api";
+import { doGet, doPost, doPatch } from "../core/api/api";
 import { ClientsTableData } from "../interfaces/clients.interface";
 
 export interface CreateClientPost {
@@ -37,3 +37,15 @@ export const getClientById = async (id: string): Promise<ClientsTableData> => {
     return error as ClientsTableData;
   }
 }
+
+export const updateClient = async <T>(
+  id: string,
+  values: CreateClientPost
+): Promise<void> => {
+  try {
+    await doPatch<T, typeof values>(`/clients/${id}`, values);
+  } catch (error) {
+    console.error("UPDATE failed:", error);
+    throw error;
+  }
+};

@@ -56,3 +56,26 @@ export const doGet = async <T>(resource: string): Promise<ApiResponse<T>> => {
     );
   }
 };
+
+export const doPatch = async <T, D>(
+  resource: string,
+  data: D
+): Promise<ApiResponse<T>> => {
+  try {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+    const url = resource.startsWith("/")
+      ? `${baseUrl}${resource}`
+      : `${baseUrl}/${resource}`;
+    const response: ApiResponse<T> = await axios.patch(url, data);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+    };
+  } catch (error) {
+    const axiosError = error as { response: { data: ApiError } };
+    throw new Error(
+      axiosError.response?.data?.message || "Error performing PATCH request"
+    );
+  }
+};

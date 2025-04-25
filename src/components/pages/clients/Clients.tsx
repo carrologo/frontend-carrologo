@@ -9,8 +9,12 @@ const Clients = () => {
 
   const [clients, setClients] = useState<ClientsTableData>({} as ClientsTableData);
   const fetchClients = async () => {
-    const clientsData = await getClients();
-    setClients(clientsData);
+    try {
+      const clientsData = await getClients();
+      setClients(clientsData);
+    } catch (error) {
+      console.error("Error al obtener clientes:", error);
+    }
   };
 
   useEffect(() => {
@@ -22,6 +26,7 @@ const Clients = () => {
       <div className="clients-header">
         <DataTable
           dataTable={clients}
+          onClientsUpdated={fetchClients}
         />
       </div>
     </main>

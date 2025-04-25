@@ -7,7 +7,7 @@ import "dayjs/locale/es";
 import { Box, Button, TextField, Typography, Grid } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
-import ClearIcon from '@mui/icons-material/Clear';
+import ClearIcon from "@mui/icons-material/Clear";
 
 dayjs.locale("es");
 
@@ -17,6 +17,7 @@ interface ModalFormProps {
   validationSchema: Yup.ObjectSchema<any>;
   initialValues: any;
   title: string;
+  cancelDisabled?: boolean;
   onSubmit: (values: any) => void;
   onClose: () => void;
 }
@@ -26,6 +27,7 @@ const ModalForm = ({
   validationSchema,
   initialValues,
   title,
+  cancelDisabled,
   onSubmit,
   onClose,
 }: ModalFormProps) => {
@@ -54,7 +56,7 @@ const ModalForm = ({
           <Form>
             <Box sx={{ p: { xs: 3, md: 5 }, bgcolor: "background.paper" }}>
               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <ClearIcon sx={{cursor: 'pointer'}} onClick={onClose}/>
+                <ClearIcon sx={{ cursor: "pointer" }} onClick={onClose} />
               </Box>
               <Typography
                 variant="h4"
@@ -72,21 +74,15 @@ const ModalForm = ({
                   >
                     {field.type === "date" ? (
                       <Field name={field.name}>
-                        {({
-                          field,
-                        }: {
-                          field: {
-                            value: Dayjs | null;
-                            name: string;
-                            label: string;
-                            required: boolean;
-                          };
-                        }) => (
+                        {({ field: formikField }: { field: FieldConfig}) => (
                           <DatePicker
                             label={field.label}
-                            value={field.value}
-                            onChange={(value) =>
+                            value={formikField.value as Dayjs}
+                            disabled={field.disabled}
+                            sx={{ width: "100%" }}
+                            onChange={(value) =>{
                               setFieldValue(field.name, value)
+                            }
                             }
                             slotProps={{
                               textField: {
@@ -140,7 +136,7 @@ const ModalForm = ({
                       mt: 2,
                     }}
                   >
-                    <Button
+                    { !cancelDisabled && <Button
                       variant="contained"
                       color="error"
                       onClick={() => {
@@ -150,7 +146,7 @@ const ModalForm = ({
                       disabled={isSubmitting}
                     >
                       Cancelar
-                    </Button>
+                    </Button>}
                     <Button
                       variant="contained"
                       color="primary"

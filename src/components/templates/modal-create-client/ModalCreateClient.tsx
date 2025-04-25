@@ -1,7 +1,7 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
 import ModalForm from "../../organisms/modal-form/ModalForm";
-import { createClient } from "../../../services/clients.service";
+import { createClient, CreateClientPost } from "../../../services/clients.service";
 
 const fields: FieldConfig[] = [
   { name: "name", label: "Nombre", type: "text", required: true },
@@ -51,15 +51,30 @@ const initialValues = {
   comment: "",
 };
 
-export const ModalCreateClient = ({ onClose }: { onClose: () => void }) => (
+interface ModalCreateClientProps {
+  onClose: () => void;
+  onClientCreated: () => void; // Nueva prop para notificar creación
+}
+
+
+export const ModalCreateClient = ({ onClose, onClientCreated }: ModalCreateClientProps) => {
+
+  const handleCreateClient = async (data: CreateClientPost) => {
+    try {
+      await createClient(data);
+      onClientCreated();
+    } catch (error) {
+      console.error("Error al crear cliente:", error);
+    }
+  };
+  
+  return(
   <ModalForm
     fields={fields}
     validationSchema={validationSchema}
     initialValues={initialValues}
     title="Crear Cliente"
-    onSubmit={(values) => {
-      createClient(values);
-    }}
+    onSubmit={handleCreateClient}
     onClose={onClose}
   />
-);
+)};

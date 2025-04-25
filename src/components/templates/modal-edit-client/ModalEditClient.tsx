@@ -1,8 +1,9 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
 import ModalForm from "../../organisms/modal-form/ModalForm";
-import { updateClient } from "../../../services/clients.service";
+import { CreateClientPost, updateClient } from "../../../services/clients.service";
 import dayjs from "dayjs"; 
+import { Client } from "../../../interfaces/clients.interface";
 
 const fields: FieldConfig[] = [
   { name: "name", label: "Nombre", type: "text", required: true },
@@ -42,22 +43,32 @@ const validationSchema = Yup.object({
   comment: Yup.string().required("Los comentarios son obligatorios"),
 });
 
-export const ModalEditClient = ({
-  onClose,
-  clientData,
-}: {
+interface ModalEditClientProps {
+  clientData: Client;
   onClose: () => void;
-  clientData: any;
-}) => {
+  onEditClient: () => void;
+}
+
+export const ModalEditClient = ({ clientData, onClose, onEditClient }: ModalEditClientProps) => {
+
   const initialValues = {
-    name: clientData.name || "",
-    lastName: clientData.lastName || "",
-    email: clientData.email || "",
-    identification: clientData.identification || "",
+    name: clientData.name ?? "",
+    lastName: clientData.lastName ?? "",
+    email: clientData.email ?? "",
+    identification: clientData.identification ?? "",
     birthdate: clientData.birthdate ? dayjs(clientData.birthdate) : null,
-    contact: clientData.contact || "",
-    comment: clientData.comment || "",
+    contact: clientData.contact ?? "",
+    comment: clientData.comment ?? "",
   };
+
+    const handleEditClient = async (data: CreateClientPost) => {
+      try {
+        await updateClient(clientData.id, data);
+        onEditClient();
+      } catch (error) {
+        console.error("Error al crear cliente:", error);
+      }
+    };
 
   return (
     <ModalForm
@@ -65,9 +76,7 @@ export const ModalEditClient = ({
       validationSchema={validationSchema}
       initialValues={initialValues}
       title="Editar Cliente"
-      onSubmit={(values) => {
-        updateClient(clientData.id, values);
-      }}
+      onSubmit={handleEditClient}
       onClose={onClose}
     />
   );

@@ -1,5 +1,5 @@
 import { doGet, doPost } from "../core/api/api";
-import { ClientsTableData } from "../interfaces/clients.interface";
+import { Client, ClientsTableData } from "../interfaces/clients.interface";
 
 export interface CreateClientPost {
   name: string;
@@ -29,11 +29,11 @@ export const getClients = async (): Promise<ClientsTableData> => {
   }
 }
 
-export const getClientById = async (id: string): Promise<ClientsTableData> => {
+export const getClientById = async (id: string): Promise<Client> => {
   try {
-    const response = await doGet<ClientsTableData>(`/client/${id}`);
+    const response = await doGet<Client>(`/client/${id}`);
     return response.data;
   } catch (error) {
-    return error as ClientsTableData;
+    return error as Client;
   }
 }

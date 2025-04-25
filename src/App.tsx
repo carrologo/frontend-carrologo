@@ -7,14 +7,12 @@ import Header from './components/organisms/navbar/header'
 function App() {
 
   return (
-    <>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route element={<Header />}>
           <Route path="/clientes" element={<Clients/>} />
         </Route>
       </Routes>
-    </>
   )
 }
 

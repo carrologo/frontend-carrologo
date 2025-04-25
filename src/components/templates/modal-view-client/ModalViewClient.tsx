@@ -2,6 +2,7 @@ import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
 import ModalForm from "../../organisms/modal-form/ModalForm";
 import dayjs from "dayjs";
+import { Client } from "../../../interfaces/clients.interface";
 
 const fields: FieldConfig[] = [
   { name: "name", label: "Nombre", type: "text", required: true ,disabled: true},
@@ -32,39 +33,34 @@ export const ModalViewClient = ({
   clientData,
   onClose,
 }: {
-  clientData: any;
+  clientData: Client;
   onClose: () => void;
 }) => {
-  console.log("Valor de birthdate:", clientData?.birthdate);
-  console.log("Tipo de birthdate:", typeof clientData?.birthdate);
-  console.log("Valor de clientData:", typeof clientData?.name);
-  console.log("Datos completos de clientData:", clientData);
-  
   const initialValues = {
-    name: clientData?.name?? "",
-    lastName: clientData?.lastName?? "",
-    email: clientData?.email ?? "",
-    identification: clientData?.identification?? "" ,
-    birthdate: clientData?.birthdate ? dayjs(clientData.birthdate) : null,
-    contact: clientData?.contact?? "" ,
-    comment: clientData?.comment ?? "",
+    name: clientData.name ?? "",
+    lastName: clientData.lastName ?? "",
+    email: clientData.email ?? "",
+    identification: clientData?.identification ?? "" ,
+    birthdate: clientData.birthdate ? dayjs(clientData.birthdate) : null,
+    contact: clientData.contact ?? "" ,
+    comment: clientData.comment ?? "",
   };
 
   const fieldsWithValues: FieldConfig[] = fields.map((field) => ({
     ...field,
     value:
-      field.name === "birthdate" && clientData?.birthdate
+      field.name === "birthdate" && clientData.birthdate
         ? dayjs(clientData.birthdate)
-        : clientData?.[field.name] ?? "",
-  }));
+        : clientData?.[field.name as keyof Client] ?? "",
+  } as FieldConfig));
 
   return (
     <ModalForm
       fields={fieldsWithValues}
-      validationSchema={Yup.object({})} // Desactivado, no debe validar nada
+      validationSchema={Yup.object({})}
       initialValues={initialValues}
       title="Detalle del Cliente"
-      onSubmit={() => {}} // Desactivado, no debe enviar nada
+      onSubmit={() => {}} 
       onClose={onClose}
     />
   );

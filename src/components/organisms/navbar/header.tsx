@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 
-import "./Header.css";
+import "./header.css";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);

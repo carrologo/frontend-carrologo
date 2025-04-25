@@ -37,10 +37,12 @@ export const ModalViewClient = ({
 }) => {
   console.log("Valor de birthdate:", clientData?.birthdate);
   console.log("Tipo de birthdate:", typeof clientData?.birthdate);
-  console.log("Valor de clientData:", clientData?.name);
-
+  console.log("Valor de clientData:", typeof clientData?.name);
+  console.log("Datos completos de clientData:", clientData);
+  
+  const name: string = clientData?.name;
   const initialValues = {
-    name: clientData?.name,
+    name: name,
     lastName: clientData?.lastName,
     email: clientData?.email ,
     identification: clientData?.identification ,

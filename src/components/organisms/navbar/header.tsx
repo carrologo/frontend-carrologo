@@ -1,10 +1,11 @@
+
 import { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 import { Outlet } from "react-router-dom";
-
+import { LogOut, Menu } from "lucide-react";
 import "./header.css";
 
-const Header = () => {
+const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLDivElement | null>(null);
 
@@ -21,6 +22,11 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleLogout = () => {
+    // Implementar lógica de cierre de sesión aquí
+    console.log("Cerrando sesión...");
+  };
+
   return (
     <>
       <header>
@@ -34,19 +40,35 @@ const Header = () => {
             <span>ElCarrologo</span>
           </div>
 
-          <div className={menuOpen ? "nav-links open" : "nav-links"}>
-            <NavLink to="/clientes" onClick={() => setMenuOpen(false)}>
-              Clientes
-            </NavLink>
+          <div className="nav-links-container">
+            <div className={menuOpen ? "nav-links open" : "nav-links"}>
+              <NavLink to="/clientes" onClick={() => setMenuOpen(false)}>
+                Clientes
+              </NavLink>
+              <NavLink to="/vehiculos" onClick={() => setMenuOpen(false)}>
+                Vehiculos
+              </NavLink>
+            </div>
           </div>
 
-          <button
-            className="burger-btn"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            <span className={menuOpen ? "burger open" : "burger"} />
-          </button>
+          <div className="nav-right">
+            <button
+              className="logout-btn"
+              onClick={handleLogout}
+              aria-label="Cerrar sesión"
+            >
+              <LogOut size={20} />
+              <span className="logout-text">Cerrar sesión</span>
+            </button>
+            
+            <button
+              className="burger-btn"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
+              <Menu className={menuOpen ? "menu-icon open" : "menu-icon"} />
+            </button>
+          </div>
         </nav>
       </header>
       <Outlet />
@@ -54,4 +76,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Navbar;

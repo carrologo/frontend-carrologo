@@ -1,7 +1,8 @@
+
 header {
     background-color: #0071BC;
     padding: 1rem;
-   
+    width: 100%;
 }
 
 nav {
@@ -9,87 +10,113 @@ nav {
     justify-content: space-between;
     align-items: center;
     position: relative;
+    margin: 0 auto;
 }
 
+/* Logo Styles */
 .logo-container {
     display: flex;
     align-items: center;
 }
 
 .logo-container span {
-    color: var(--color-0);
+    color: #ffffff;
     margin-left: 0.5rem;
     font-size: 1.25rem;
     font-weight: bold;
 }
 
 .logo {
-    height: 50px;
+    height: 40px;
+}
+
+/* Center Nav Links Container */
+.nav-links-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
 /* Nav Links */
 .nav-links {
     display: flex;
-    gap: 1rem;
+    gap: 2rem;
     justify-content: center;
-    flex: 1;
 }
 
 .nav-links a {
     color: #ffffff;
     text-decoration: none;
     font-weight: 500;
+    transition: all 0.2s ease;
+    padding: 0.5rem 0.75rem;
+}
+
+.nav-links a:hover {
+    opacity: 0.85;
 }
 
 .nav-links a.active {
-    border-bottom: 2px solid var(--color-0);
+    border-bottom: 2px solid #ffffff;
+    font-weight: 600;
+}
+
+/* Right Side Elements */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Logout Button */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Burger Button */
 .burger-btn {
-    border-radius: 1px;
-    border-color: #0071BC;
     display: none;
-    background: #ffffff;
+    background: transparent;
+    border: none;
     cursor: pointer;
-    z-index: 20;
+    color: white;
+    padding: 0.5rem;
 }
 
-.burger,
-.burger::before,
-.burger::after {
-    content: '';
+.menu-icon {
     display: block;
-    width: 24px;
-    height: 3px;
-    background: var(--color-0);
-    border-radius: 2px;
     transition: transform 0.3s ease;
-    color: #ffffff;
 }
 
-.burger::before {
-    transform: translateY(-7px);
-}
-
-.burger::after {
-    transform: translateY(4px);
-}
-
-.burger.open {
-    background: #ffffff;
-}
-.burger.open::before {
-    transform: rotate(45deg) translate(5px, 5px);
-}
-.burger.open::after {
-    transform: rotate(-45deg) translate(5px, -5px);
+.menu-icon.open {
+    transform: rotate(90deg);
 }
 
 /* Mobile Styles */
 @media (max-width: 768px) {
     .burger-btn {
-        display: block;
+        display: flex;
+    }
+    
+    .logout-text {
+        display: none;
+    }
+
+    .nav-links-container {
+        position: static;
     }
 
     .nav-links {
@@ -97,25 +124,31 @@ nav {
         top: 100%;
         right: 0;
         flex-direction: column;
-        background: var(--color-2);
+        background-color: #0071BC;
         width: 200px;
         padding: 0.5rem 0;
         box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
         opacity: 0;
         pointer-events: none;
-        z-index: 2;
-        transition: opacity 0.3s ease;
+        z-index: 10;
+        transition: all 0.3s ease;
+        gap: 0;
+        border-radius: 0.5rem;
     }
 
     .nav-links.open {
         opacity: 1;
         pointer-events: auto;
-        background-color: #0071BC;
-        border-radius: 0.5rem;
     }
 
     .nav-links a {
         padding: 0.75rem 1rem;
+        display: block;
+        text-align: left;
         border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .nav-links a:last-child {
+        border-bottom: none;
     }
 }

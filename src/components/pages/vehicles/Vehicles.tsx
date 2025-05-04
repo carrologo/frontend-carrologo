@@ -1,11 +1,29 @@
-import "./Vehicles.css";
+
+import * as React from "react";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import { TabPanel } from "../../organisms/tabPanel/TabPanel";
+import ActiveVehicles from "../../organisms/active-vehicles/ActiveVehicles";
 
 const Vehicles = () => {
+  const [value, setValue] = React.useState('1');
+
+  const handleChange=( newValue: string,) => {
+    setValue(newValue);
+  }
 
   return( 
-
       <div>
-
+      <Tabs value={value} onChange={(_,newValue) => handleChange(newValue)} centered>
+      <Tab label="Vehiculos activos" value="1" />
+            <Tab label="Detalle de vehiculos" value="2" />
+          </Tabs>
+          <TabPanel value={value} index="1">
+            <ActiveVehicles/>
+          </TabPanel>
+          <TabPanel value={value} index="2">
+            <h1>Detalle de vehiculos</h1>
+          </TabPanel>
       </div>
   )
 }

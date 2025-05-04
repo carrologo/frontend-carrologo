@@ -37,7 +37,6 @@ const Navbar = () => {
               alt="Logo"
               className="logo"
             />
-            <span>ElCarrologo</span>
           </div>
 
           <div className="nav-links-container">

@@ -1,6 +1,6 @@
 import Grid from "@mui/material/Grid";
 import "./ActiveVehicles.css";
-import { Card, CardContent, CardHeader, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader} from "@mui/material";
 import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";

@@ -131,8 +131,8 @@ export default function DataTable({
         return fullName.includes(lowerSearchTerm);
       }
       if (searchField === "isActive") {
-        // Para el campo booleano, convertir a "activo" o "inactivo" y comparar
-        const status = row.isActive ? "activo" : "inactivo";
+        // Para el campo booleano, convertir a "activo" o "deshabilitado" y comparar
+        const status = row.isActive ? "activo" : "deshabilitado";
         return status.toLowerCase().includes(lowerSearchTerm);
       }
       // Para los demás campos, buscar directamente

@@ -17,8 +17,8 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
       <CardMedia
         component="img"
         height="194"
-        image={vehicle.url_images[0]?.base64 || '/images/image-not-found.png'}
-        alt={vehicle.url_images[0]?.name || 'Vehicle'}
+        image={vehicle.url_images || '/images/image-not-found.png'}
+        alt={vehicle.url_images || 'Vehicle'}
       />
       <CardContent>
         <p><strong>Cilindraje:</strong> {vehicle.displacement} cc</p>

@@ -14,7 +14,7 @@ export interface Vehicle {
   displacement: number;
   seat_material: string;
   airbags: boolean;
-  url_images: Image[];
+  url_images: string;
 }
 
 export interface VehiclesTableData {

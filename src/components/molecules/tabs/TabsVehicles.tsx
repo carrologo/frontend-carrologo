@@ -9,18 +9,23 @@ import { Vehicle } from "../../../interfaces/vehicles.interface";
 import VehicleTable from "../../organisms/vehicle-table/VehicleTable";
 import { useMemo, useState } from "react";
 import {
+  Button,
+  Dialog,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   TextField,
 } from "@mui/material";
+import { ModalCreateVehicle } from "../../templates/modal-create-vehicle/ModalCreateVehicle";
 
 interface TabsVehiclesProps {
   dataVehicles: Vehicle[];
+  onUpdateVehicles: () => void;
 }
-const TabsVehicles = ({ dataVehicles }: TabsVehiclesProps) => {
+const TabsVehicles = ({ dataVehicles, onUpdateVehicles }: TabsVehiclesProps) => {
   const [value, setValue] = useState("1");
+  const [openCreateModal, setOpenCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("brand");
 
@@ -72,7 +77,26 @@ const TabsVehicles = ({ dataVehicles }: TabsVehiclesProps) => {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          m: 2,
+          flexDirection: { xs: "column", sm: "row" },
+          gap: { xs: 2, sm: 1 },
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => setOpenCreateModal(true)}
+          sx={{
+            minWidth: { xs: "100%", sm: "auto" },
+            maxWidth: { xs: "300px" },
+          }}
+        >
+          Agregar Vehículo
+        </Button>
         <Box
           sx={{
             display: "flex",
@@ -134,6 +158,12 @@ const TabsVehicles = ({ dataVehicles }: TabsVehiclesProps) => {
       <TabPanel value={value} index="2">
         <VehicleTable vehicles={filteredVehicles} />
       </TabPanel>
+      <Dialog open={openCreateModal} maxWidth="md" fullWidth>
+        <ModalCreateVehicle
+          onClose={() => setOpenCreateModal(false)}
+          onVehicleCreated={onUpdateVehicles}
+        />
+      </Dialog>
     </Box>
   );
 };

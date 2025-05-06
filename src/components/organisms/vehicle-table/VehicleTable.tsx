@@ -1,14 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import { Vehicle } from '../../../interfaces/vehicles.interface';
 import './vehicleTable.css';
 
@@ -17,8 +11,6 @@ interface VehicleTableProps {
 }
 
 export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchField, setSearchField] = useState('brand');
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -28,7 +20,7 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
     { field: 'brand', headerName: 'Marca', width: 120 },
     { field: 'line', headerName: 'Línea', width: 120 },
     { field: 'version', headerName: 'Versión', width: 120 },
-    { field: 'type', headerName: 'Tipo', width: 100 },
+    { field: 'type', headerName: 'Tipo de Vehículo', width: 100 },
     {
       field: 'model',
       headerName: 'Año',
@@ -36,6 +28,7 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
       renderCell: (params) => new Date(params.value).getFullYear(),
     },
     { field: 'transmission', headerName: 'Transmisión', width: 120 },
+    { field: 'traction', headerName: 'Tipo de Tracción', width: 120 },
     { field: 'fuel_type', headerName: 'Combustible', width: 120 },
     {
       field: 'kms',
@@ -47,7 +40,7 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
       field: 'displacement',
       headerName: 'Cilindrada',
       width: 100,
-      renderCell: (params) => `${params.value}L`,
+      renderCell: (params) => `${params.value} cc`,
     },
     { field: 'seat_material', headerName: 'Material Asientos', width: 150 },
     {

@@ -22,7 +22,10 @@ const Vehicles = () => {
 
   return( 
     <div>
-      <TabsVehicles dataVehicles={vehicles}/>
+      <TabsVehicles 
+        dataVehicles={vehicles}
+        onUpdateVehicles={fetchVehicles}
+      />
     </div>
   )
 }

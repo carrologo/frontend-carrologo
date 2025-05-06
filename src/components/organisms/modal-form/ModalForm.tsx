@@ -4,10 +4,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Field, Form, Formik } from "formik";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/es";
-import { Box, Button, TextField, Typography, Grid } from "@mui/material";
+import { Box, Button, TextField, Typography, Grid, FormControlLabel, Checkbox } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import ClearIcon from "@mui/icons-material/Clear";
+import ImageUploadField from "../../molecules/image-upload-field/ImageUploadField";
 
 dayjs.locale("es");
 
@@ -70,20 +71,20 @@ const ModalForm = ({
                 {fields.map((field) => (
                   <Grid
                     key={field.name}
-                    size={{ xs: 12, md: field.multiline ? 12 : 6 }}
+                    size={{ xs: 12, md: field.multiline || field.type === "file" ? 12 : 6 }}
                   >
                     {field.type === "date" ? (
                       <Field name={field.name}>
-                        {({ field: formikField }: { field: FieldConfig}) => (
+                        {({ field: formikField }: { field: FieldConfig }) => (
                           <DatePicker
                             label={field.label}
                             value={formikField.value as Dayjs}
                             disabled={field.disabled}
+                            views={field.views}
                             sx={{ width: "100%" }}
-                            onChange={(value) =>{
-                              setFieldValue(field.name, value)
-                            }
-                            }
+                            onChange={(value) => {
+                              setFieldValue(field.name, value);
+                            }}
                             slotProps={{
                               textField: {
                                 variant: "outlined",
@@ -101,22 +102,58 @@ const ModalForm = ({
                           />
                         )}
                       </Field>
+                    ) : field.type === "boolean" ? (
+                      <Field name={field.name}>
+                        {({ field: formikField }: { field: any }) => (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={formikField.value}
+                                onChange={(e) =>
+                                  setFieldValue(field.name, e.target.checked)
+                                }
+                                disabled={field.disabled}
+                              />
+                            }
+                            label={field.label}
+                            sx={{
+                              "& .MuiFormControlLabel-label": {
+                                color:
+                                  touched[field.name] && errors[field.name]
+                                    ? "error.main"
+                                    : "text.primary",
+                              },
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          />
+                        )}
+                      </Field>
+                    ) :field.type === 'file' ? (
+                      <Field name={field.name}>
+                        {({ field: formikField }: { field: any }) => (
+                          <ImageUploadField
+                            field={field}
+                            formikField={formikField}
+                            setFieldValue={setFieldValue}
+                            touched={touched}
+                            errors={errors}
+                          />
+                        )}
+                      </Field>
                     ) : (
                       <Field
                         as={TextField}
                         name={field.name}
                         label={field.label}
-                        type={field.type ?? "text"}
+                        type={field.type ?? 'text'}
                         variant="outlined"
                         required={field.required}
                         disabled={field.disabled}
                         multiline={field.multiline}
                         rows={field.rows}
                         fullWidth
-                        // value={field.disabled ? field.value : undefined}
-                        error={
-                          touched[field.name] && Boolean(errors[field.name])
-                        }
+                        error={touched[field.name] && Boolean(errors[field.name])}
                         helperText={
                           touched[field.name] && errors[field.name]
                             ? String(errors[field.name])
@@ -136,17 +173,19 @@ const ModalForm = ({
                       mt: 2,
                     }}
                   >
-                    { !cancelDisabled && <Button
-                      variant="contained"
-                      color="error"
-                      onClick={() => {
-                        resetForm();
-                        onClose();
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Cancelar
-                    </Button>}
+                    {!cancelDisabled && (
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={() => {
+                          resetForm();
+                          onClose();
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        Cancelar
+                      </Button>
+                    )}
                     <Button
                       variant="contained"
                       color="primary"

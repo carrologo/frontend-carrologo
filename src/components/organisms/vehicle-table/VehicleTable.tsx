@@ -58,48 +58,6 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
     },
   ];
 
-  const searchOptions = [
-    { value: 'brand', label: 'Marca' },
-    { value: 'line', label: 'Línea' },
-    { value: 'version', label: 'Versión' },
-    { value: 'type', label: 'Tipo' },
-    { value: 'model', label: 'Año' },
-    { value: 'transmission', label: 'Transmisión' },
-    { value: 'fuel_type', label: 'Combustible' },
-    { value: 'kms', label: 'Kilometraje' },
-    { value: 'displacement', label: 'Cilindrada' },
-    { value: 'seat_material', label: 'Material Asientos' },
-    { value: 'airbags', label: 'Airbags' },
-  ];
-
-  const filteredRows = useMemo(() => {
-    if (!searchTerm) return vehicles;
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return vehicles.filter((vehicle) => {
-      if (searchField === 'model') {
-        const year = new Date(vehicle.model).getFullYear().toString();
-        return year.includes(lowerSearchTerm);
-      }
-      if (searchField === 'kms') {
-        const kms = vehicle.kms.toString();
-        return kms.includes(lowerSearchTerm);
-      }
-      if (searchField === 'displacement') {
-        const displacement = vehicle.displacement.toString();
-        return displacement.includes(lowerSearchTerm);
-      }
-      if (searchField === 'airbags') {
-        const airbags = vehicle.airbags ? 'sí' : 'no';
-        return airbags.toLowerCase().includes(lowerSearchTerm);
-      }
-      return vehicle[searchField as keyof Vehicle]
-        ?.toString()
-        .toLowerCase()
-        .includes(lowerSearchTerm);
-    });
-  }, [vehicles, searchTerm, searchField]);
-
   return (
     <div className="vehicletable-container">
       <Paper sx={{ height: '100%', width: '100%', p: 2 }}>
@@ -114,61 +72,14 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
           Vehículos
         </Typography>
 
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            m: 2,
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'center', sm: 'flex-start' },
-            gap: { xs: 2, sm: 1 },
-          }}
-        >
-          <FormControl
-            size="small"
-            sx={{
-              minWidth: { xs: '100%', sm: 150 },
-              maxWidth: { xs: '300px' },
-            }}
-          >
-            <InputLabel id="search-field-label">Buscar por</InputLabel>
-            <Select
-              labelId="search-field-label"
-              value={searchField}
-              label="Buscar por"
-              onChange={(e) => setSearchField(e.target.value)}
-            >
-              {searchOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label={`Buscar por ${searchOptions
-              .find((opt) => opt.value === searchField)
-              ?.label.toLowerCase()}`}
-            variant="outlined"
-            size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{
-              width: { xs: '100%', sm: '200px' },
-              maxWidth: { xs: '200px' },
-            }}
-          />
-        </Box>
-
         <DataGrid
-          rows={filteredRows}
+          rows={vehicles}
           columns={columns}
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[10, 25, 50]}
           sx={{ border: 0, overflow: 'auto' }}
-          getRowId={(row) => `${row.brand}-${row.line}-${row.model}-${row.kms}`}
         />
       </Paper>
     </div>

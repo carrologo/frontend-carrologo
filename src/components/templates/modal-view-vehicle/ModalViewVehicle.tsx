@@ -1,7 +1,6 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
 import ModalForm from "../../organisms/modal-form/ModalForm";
-import { Image } from "../../../interfaces/commons.interface";
 import dayjs from "dayjs";
 
 const fields: FieldConfig[] = [

@@ -1,4 +1,4 @@
-import { doGet, doPost } from "../core/api/api";
+import { doGet, doPost, doPatch} from "../core/api/api";
 import { Image } from "../interfaces/commons.interface";
 import { VehiclesTableData } from "../interfaces/vehicles.interface";
 
@@ -32,6 +32,15 @@ export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<voi
     await doPost<T, typeof values>('/vehicle', values, 'vehicle');
   } catch (error) {
     console.error('POST failed:', error);
+    throw error;
+  }
+};
+
+export const updateVehicle = async (id: number, values: Partial<CreateVehiclePost>): Promise<void> => {
+  try {
+    await doPatch(`/vehicle/${id}`, values, 'vehicle');
+  } catch (error) {
+    console.error('PATCH failed:', error);
     throw error;
   }
 };

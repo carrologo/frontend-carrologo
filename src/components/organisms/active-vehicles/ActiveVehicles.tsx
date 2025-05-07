@@ -7,6 +7,7 @@ interface ActiveVehiclesProps {
 }
 
 const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({ vehicles }) => {
+  
   return (
     <Grid
       container

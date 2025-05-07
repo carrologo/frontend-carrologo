@@ -35,3 +35,4 @@ export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<voi
     throw error;
   }
 };
+

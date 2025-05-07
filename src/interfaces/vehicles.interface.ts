@@ -1,4 +1,4 @@
-import { Image } from "./commons.interface";
+//import { Image } from "./commons.interface";
 
 export interface Vehicle {
   id: number;

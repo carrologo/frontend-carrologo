@@ -6,6 +6,8 @@ import Typography from '@mui/material/Typography';
 import { Dialog } from '@mui/material';
 import { Vehicle } from '../../../interfaces/vehicles.interface';
 import { ModalViewVehicle } from '../../templates/modal-view-vehicle/ModalViewVehicle';
+import IconButton from '@mui/material/IconButton';
+import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
 import './vehicleTable.css';
 
@@ -65,6 +67,22 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
       width: 100,
       renderCell: (params) => (params.value ? 'Sí' : 'No'),
     },
+    {
+          field: "edit",
+          headerName: "",
+          width: 60,
+          sortable: false,
+          filterable: false,
+          renderCell: (params) => (
+            <IconButton
+              aria-label="editar"
+              color="primary"
+              onClick={() => handleViewVehicles(params.row)}
+            >
+              <ModeEditIcon />
+            </IconButton>
+          ),
+        },
   ];
 
   return (

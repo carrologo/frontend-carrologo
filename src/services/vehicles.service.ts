@@ -15,7 +15,7 @@ export interface CreateVehiclePost {
   displacement: number;
   seat_material: string;
   airbags: boolean;
-  images: Image[];
+  images?: Image[];
 }
 
 export const getVehicles = async (): Promise<VehiclesTableData> => {
@@ -38,7 +38,7 @@ export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<voi
 
 export const updateVehicle = async (id: number, values: Partial<CreateVehiclePost>): Promise<void> => {
   try {
-    await doPatch(`/vehicle/${id}`, values, 'vehicle');
+    await doPatch(`/vehicles/${id}`, values, 'vehicle');
   } catch (error) {
     console.error('PATCH failed:', error);
     throw error;

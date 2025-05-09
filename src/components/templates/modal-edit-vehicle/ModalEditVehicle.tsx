@@ -38,7 +38,7 @@ const validationSchema = Yup.object({
   images: Yup.array(),
 });
 
-interface ModalEditVehicleProps {
+interface ModalEditVehicleProps { 
   onClose: () => void;
   vehicleId: number;
   initialData: CreateVehiclePost;

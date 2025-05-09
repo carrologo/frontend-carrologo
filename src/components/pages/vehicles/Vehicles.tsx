@@ -11,6 +11,7 @@ const Vehicles = () => {
     try {
       const vehiclesData = await getVehicles();
       setVehicles(vehiclesData.data);
+      
     } catch (error) {
       console.error("Error al obtener vehiculos:", error);
     }

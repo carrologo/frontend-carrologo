@@ -38,7 +38,7 @@ export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<voi
 
 export const updateVehicle = async (id: number, values: Partial<CreateVehiclePost>): Promise<void> => {
   try {
-    await doPatch(`/vehicle/${id}`, values, 'vehicle');
+    await doPatch(`/vehicles/${id}`, values, 'vehicle');
   } catch (error) {
     console.error('PATCH failed:', error);
     throw error;

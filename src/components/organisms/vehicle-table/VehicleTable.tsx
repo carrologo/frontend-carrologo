@@ -3,7 +3,10 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { Dialog } from '@mui/material';
 import { Vehicle } from '../../../interfaces/vehicles.interface';
+import { ModalViewVehicle } from '../../templates/modal-view-vehicle/ModalViewVehicle';
+
 import './vehicleTable.css';
 
 interface VehicleTableProps {
@@ -15,6 +18,19 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
     page: 0,
     pageSize: 10,
   });
+
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null); // Estado para el vehículo seleccionado
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar el modal
+
+  const handleViewVehicles = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedVehicle(null);
+  };
 
   const columns: GridColDef[] = [
     { field: 'brand', headerName: 'Marca', width: 120 },
@@ -71,10 +87,24 @@ export default function VehicleTable({ vehicles }: Readonly<VehicleTableProps>) 
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
+          onCellDoubleClick={(params) => {
+            if (params.field === "delete" || params.field === "edit") return;
+            handleViewVehicles(params.row);
+          }}
           pageSizeOptions={[10, 25, 50]}
           sx={{ border: 0, overflow: 'auto' }}
         />
       </Paper>
+
+      <Dialog open={isModalOpen} onClose={handleCloseModal} maxWidth="md" fullWidth>
+        {selectedVehicle && (
+          <ModalViewVehicle
+            onClose={handleCloseModal}
+            initialValues={selectedVehicle} // Pasa los datos del vehículo al modal
+          />
+        )}
+      </Dialog>
+      
     </div>
   );
 }

@@ -15,7 +15,7 @@ export interface CreateVehiclePost {
   displacement: number;
   seat_material: string;
   airbags: boolean;
-  images?: Image[];
+  images: Image[];
 }
 
 export const getVehicles = async (): Promise<VehiclesTableData> => {

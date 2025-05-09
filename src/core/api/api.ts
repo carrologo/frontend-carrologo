@@ -57,7 +57,6 @@ export const doGet = async <T>(
 ): Promise<ApiResponse<T>> => {
   try {
     const baseUrl = baseUrlMap[apiType];
-    console.log('baseUrl', baseUrl);
     if (!baseUrl) {
       throw new Error(`No base URL defined for apiType: ${apiType}`);
     }

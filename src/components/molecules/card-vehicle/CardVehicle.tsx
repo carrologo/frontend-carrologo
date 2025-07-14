@@ -3,15 +3,17 @@ import {
   Card,
   CardContent,
   CardHeader,
-  CardMedia,
   CardActions,
   Dialog,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import Button from "@mui/material/Button";
 import { Vehicle } from "../../../interfaces/vehicles.interface";
 import { ModalEditVehicle } from "../../templates/modal-edit-vehicle/ModalEditVehicle";
 import { ModalViewVehicle } from "../../templates/modal-view-vehicle/ModalViewVehicle";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
+import { DirectionsCar } from "@mui/icons-material";
 
 interface CardVehicleProps {
   vehicle: Vehicle;
@@ -20,6 +22,8 @@ interface CardVehicleProps {
 const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
   const [openView, setOpenView] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const url = vehicle.url_images;
 
   const handleOpenView = () => setOpenView(true);
   const handleCloseView = () => setOpenView(false);
@@ -27,18 +31,22 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
   const handleOpenEdit = () => setOpenEdit(true);
   const handleCloseEdit = () => setOpenEdit(false);
 
+  const handleViewImages = () => {
+    if (url) {
+      window.open(url, "_blank");
+    } else {
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    }
+  };
+
   return (
     <>
       <Card>
         <CardHeader
-          title={`${vehicle.brand} ${vehicle.line}`}
+          avatar={<DirectionsCar sx={{ fontSize: 50 }} />}
+          title={<strong style={{ fontSize: '1.2rem' }}>{`${vehicle.brand} ${vehicle.line}`}</strong>}
           subheader={new Date(vehicle.model).getFullYear().toString()}
-        />
-        <CardMedia
-          component="img"
-          height="194"
-          image={vehicle.url_images || "/images/image-not-found.png"}
-          alt={vehicle.url_images || "Vehicle"}
         />
         <CardContent>
           <p>
@@ -64,6 +72,13 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
             startIcon={<ModeEditIcon />}
           >
             Editar
+          </Button>
+          <Button
+            size="small"
+            onClick={handleViewImages}
+            variant="contained"
+          >
+            Ver imagenes
           </Button>
         </CardActions>
       </Card>
@@ -94,6 +109,11 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
           imageUrl={vehicle.url_images}
         />
       </Dialog>
+        <Snackbar open={showAlert} autoHideDuration={3000} onClose={() => setShowAlert(false)}>
+        <Alert severity="warning" onClose={() => setShowAlert(false)}>
+          No hay una URL asignada a este vehículo .
+        </Alert>
+      </Snackbar>
     </>
   );
 };

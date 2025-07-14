@@ -14,12 +14,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Cake, CalendarToday } from "@mui/icons-material";
-import { getClients } from "../../../services/clients.service";
-import { Client } from "../../../interfaces/clients.interface";
+import { getNotifications } from "../../../services/notifications.service";
+import { UpcomingBirthday } from "../../../interfaces/notifications.interface";
 
 const BirthdateList = () => {
   const [clientesProximos, setClientesProximos] = useState<
-    { cliente: Client; diasFaltantes: number }[]
+    { cliente: UpcomingBirthday; diasFaltantes: number }[]
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,15 +27,15 @@ const BirthdateList = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await getClients(1, 100);
-        const clientes: Client[] = res.data;
+        const res = await getNotifications('month');
+        const upcomingBirthdays = res.data.upcomingBirthdays;
 
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
 
-        const cumpleEnMenosDe30Dias = clientes
+        const cumpleEnMenosDe30Dias = upcomingBirthdays
           .map((cliente) => {
-            const nacimiento = new Date(cliente.birthdate);
+            const nacimiento = new Date(cliente.birthDate);
             const cumple = new Date(
               hoy.getFullYear(),
               nacimiento.getMonth(),
@@ -58,7 +58,7 @@ const BirthdateList = () => {
 
         setClientesProximos(cumpleEnMenosDe30Dias);
       } catch (error) {
-        console.error("Error al obtener clientes:", error);
+        console.error("Error al obtener notificaciones:", error);
       } finally {
         setLoading(false);
       }
@@ -99,30 +99,47 @@ const BirthdateList = () => {
                   borderRadius: 2,
                   mb: 1,
                   border: "1px solid #0066ffff",
+                  alignItems: "flex-start",
+                  py: 2,
                 }}
               >
                 <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: "#1e76e9ff" }}>
+                  <Avatar sx={{ bgcolor: "#1e76e9ff", mt: 0.5 }}>
                     <Cake />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={`${cliente.name} ${cliente.lastName}`}
-                  secondary={` ${new Date(cliente.birthdate).toLocaleDateString(
-                    "es-ES"
-                  )}`}
-                />
-                <Chip
-                  label={
-                    diasFaltantes === 0
-                      ? "¡Hoy!"
-                      : diasFaltantes === 1
-                      ? "Mañana"
-                      : `${diasFaltantes} días`
+                  primary={cliente.name}
+                  secondary={
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        📅 {new Date(cliente.birthDate).toLocaleDateString("es-ES")}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        📧 {cliente.email}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        📞 {cliente.contact}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        🆔 {cliente.identification}
+                      </Typography>
+                    </Box>
                   }
-                  color={diasFaltantes <= 7 ? "primary" : "default"}
-                  variant="filled"
                 />
+                <Box sx={{ alignSelf: "flex-start", mt: 0.5 }}>
+                  <Chip
+                    label={
+                      diasFaltantes === 0
+                        ? "¡Hoy!"
+                        : diasFaltantes === 1
+                        ? "Mañana"
+                        : `${diasFaltantes} días`
+                    }
+                    color={diasFaltantes <= 7 ? "primary" : "default"}
+                    variant="filled"
+                  />
+                </Box>
               </ListItem>
             ))}
           </List>

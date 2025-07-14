@@ -109,9 +109,27 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
           imageUrl={vehicle.url_images}
         />
       </Dialog>
-        <Snackbar open={showAlert} autoHideDuration={3000} onClose={() => setShowAlert(false)}>
-        <Alert severity="warning" onClose={() => setShowAlert(false)}>
-          No hay una URL asignada a este vehículo .
+        <Snackbar 
+          open={showAlert} 
+          autoHideDuration={3000} 
+          onClose={() => setShowAlert(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{ 
+            position: 'fixed',
+            top: 80,
+            zIndex: 9999
+          }}
+        >
+        <Alert 
+          severity="warning" 
+          onClose={() => setShowAlert(false)}
+          sx={{
+            minWidth: 300,
+            fontSize: '1rem',
+            fontWeight: 'bold'
+          }}
+        >
+          No hay una URL asignada a este vehículo.
         </Alert>
       </Snackbar>
     </>

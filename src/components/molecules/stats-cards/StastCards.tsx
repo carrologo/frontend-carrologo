@@ -17,11 +17,15 @@ import {
 
 import { getClients } from "../../../services/clients.service";
 import { getVehicles } from "../../../services/vehicles.service";
+import { getTransactions } from "../../../services/transactions.service";
+import { Transaction } from "../../../interfaces/transactions.interface";
 import "./StatsCards.css";
 
 const StatsCards = () => {
   const [totalClients, setTotalClients] = useState<number>(0);
   const [totalVehicles, setTotalVehicles] = useState<number>(0);
+  const [totalTransactions, setTotalTransactions] = useState<number>(0);
+  const [pendingTransactions, setPendingTransactions] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -30,15 +34,36 @@ const StatsCards = () => {
       try {
         setLoading(true);
 
-        const [clientsRes, vehiclesRes] = await Promise.all([
-          getClients(1, 1000),
-          getVehicles(1, 1000),
+        // Hacer llamadas con límite pequeño ya que solo necesitamos los totales
+        const [clientsRes, vehiclesRes, transactionsRes] = await Promise.all([
+          getClients(1, 1), // Solo necesitamos el total, no los datos
+          getVehicles(1, 1),
+          getTransactions(1, 50), // Un poco más para calcular pendientes
         ]);
 
-        setTotalClients(clientsRes.data.length);
-        setTotalVehicles(vehiclesRes.data.length);
+        // Usar totales de paginación para estadísticas
+        const totalClientsCount = clientsRes?.pagination?.total || 0;
+        const totalVehiclesCount = vehiclesRes?.pagination?.total || 0;
+        const totalTransactionsCount = transactionsRes?.pagination?.total || 0;
+
+        // Para transacciones pendientes, usamos una muestra pequeña
+        // En un caso real, sería mejor tener un endpoint específico para esto
+        const transactionsData = transactionsRes?.data || [];
+        const pendingCount = transactionsData.filter(
+          (transaction: Transaction) => transaction.id_status === 1
+        ).length;
+
+        setTotalClients(totalClientsCount);
+        setTotalVehicles(totalVehiclesCount);
+        setTotalTransactions(totalTransactionsCount);
+        setPendingTransactions(pendingCount);
       } catch (error) {
         console.error("Error al obtener datos de estadísticas:", error);
+        // Establecer valores por defecto en caso de error
+        setTotalClients(0);
+        setTotalVehicles(0);
+        setTotalTransactions(0);
+        setPendingTransactions(0);
       } finally {
         setLoading(false);
       }
@@ -66,19 +91,19 @@ const StatsCards = () => {
     },
     {
       title: "Transacciones totales",
-      value: 0,
+      value: totalTransactions,
       icon: Receipt,
       bgColor: "#3acc3e98",
       route: "/transactions",
-      clickable: false,
+      clickable: true,
     },
     {
       title: "Transacciones pendientes",
-      value: 0,
+      value: pendingTransactions,
       icon: Schedule,
       bgColor: "#ffb950ff",
       route: "/transactions",
-      clickable: false,
+      clickable: true,
     },
   ];
 

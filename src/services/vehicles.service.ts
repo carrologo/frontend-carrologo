@@ -37,6 +37,16 @@ export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<voi
   }
 };
 
+export const getVehicleById = async (id: string): Promise<{ plate: string; brand: string; line: string } | null> => {
+  try {
+    const response = await doGet<{ plate: string; brand: string; line: string }>(`/vehicles/${id}`, 'vehicle');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching vehicle by ID:', error);
+    return null;
+  }
+};
+
 export const updateVehicle = async (id: number, values: Partial<CreateVehiclePost>): Promise<void> => {
   try {
     await doPatch(`/vehicles/${id}`, values, 'vehicle');

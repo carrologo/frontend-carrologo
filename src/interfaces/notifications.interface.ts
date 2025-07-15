@@ -13,6 +13,16 @@ export interface ExpiringDocument {
   expirationDate: string;
   documentType: string;
   documentTypeId: number;
+  vehicle?: {
+    id: number;
+    plate: string | null;
+  };
+  buyer?: {
+    id: number;
+    name: string;
+    identification: string;
+    contact: string;
+  } | null;
 }
 
 export interface NotificationsData {

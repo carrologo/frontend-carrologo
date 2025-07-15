@@ -79,7 +79,9 @@ const Navbar = () => {
           </div>
         </nav>
       </header>
-      <Outlet />
+      <div className="main-content">
+        <Outlet />
+      </div>
     </>
   );
 };

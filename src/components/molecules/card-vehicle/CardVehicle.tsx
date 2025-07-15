@@ -14,6 +14,7 @@ import { ModalEditVehicle } from "../../templates/modal-edit-vehicle/ModalEditVe
 import { ModalViewVehicle } from "../../templates/modal-view-vehicle/ModalViewVehicle";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import { DirectionsCar } from "@mui/icons-material";
+import './CardVehicle.css';
 
 interface CardVehicleProps {
   vehicle: Vehicle;
@@ -65,14 +66,19 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
             <strong>Tipo de Combustible :</strong> {vehicle.fuel_type}
           </p>
         </CardContent>
-        <CardActions>
-          <Button size="small" onClick={handleOpenView}>
+        <CardActions className="card-vehicle-actions">
+          <Button 
+            size="small" 
+            onClick={handleOpenView}
+            className="card-vehicle-button"
+          >
             Ver detalles
           </Button>
           <Button
             size="small"
             onClick={handleOpenEdit}
             startIcon={<ModeEditIcon />}
+            className="card-vehicle-button"
           >
             Editar
           </Button>
@@ -80,6 +86,7 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
             size="small"
             onClick={handleViewImages}
             variant="contained"
+            className="card-vehicle-button"
           >
             Ver imagenes
           </Button>

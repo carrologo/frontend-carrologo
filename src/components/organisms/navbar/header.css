@@ -3,6 +3,16 @@ header {
     background-color: #0071BC;
     padding: 1rem;
     width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Espaciado para el contenido debajo del header fixed */
+.main-content {
+    margin-top: 80px; /* Ajusta según la altura del header */
 }
 
 nav {

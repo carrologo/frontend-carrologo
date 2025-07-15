@@ -10,3 +10,17 @@
   font-weight: bold;
   font-size: 16px;
 }
+
+/* Centrar solo los botones de las columnas de acciones */
+.vehicletable-container .MuiDataGrid-cell[data-field="edit"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Centrar headers de las columnas de acciones */
+.vehicletable-container .MuiDataGrid-columnHeader[data-field="edit"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

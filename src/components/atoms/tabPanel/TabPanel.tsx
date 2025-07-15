@@ -1,6 +1,7 @@
 // TabPanel.tsx
 import React from "react";
 import { Box, Typography } from "@mui/material";
+import './TabPanel.css';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -15,14 +16,19 @@ export function TabPanel({ children, value, index, ...other }: TabPanelProps) {
       hidden={value !== index}
       id={`tabpanel-${index}`}
       aria-labelledby={`tab-${index}`}
+      className="tab-panel-container"
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography component="div" variant="body1" color="text.primary">
+        <Box className="tab-panel-box">
+          <Typography 
+            component="div" 
+            variant="body1" 
+            color="text.primary"
+            className="tab-panel-typography"
+          >
             {children}
           </Typography>
-
         </Box>
       )}
     </div>

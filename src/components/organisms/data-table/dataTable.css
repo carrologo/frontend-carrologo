@@ -11,3 +11,19 @@
   font-weight: bold;
   font-size: 16px;
 }
+
+/* Centrar solo los botones de las columnas de acciones */
+.datatable-container .MuiDataGrid-cell[data-field="edit"],
+.datatable-container .MuiDataGrid-cell[data-field="delete"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Centrar headers de las columnas de acciones */
+.datatable-container .MuiDataGrid-columnHeader[data-field="edit"],
+.datatable-container .MuiDataGrid-columnHeader[data-field="delete"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

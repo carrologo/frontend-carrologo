@@ -6,10 +6,9 @@ import Typography from '@mui/material/Typography';
 import { Dialog } from '@mui/material';
 import { Vehicle } from '../../../interfaces/vehicles.interface';
 import { ModalViewVehicle } from '../../templates/modal-view-vehicle/ModalViewVehicle';
+import { ModalEditVehicle } from '../../templates/modal-edit-vehicle/ModalEditVehicle';
 import IconButton from '@mui/material/IconButton';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckIcon from '@mui/icons-material/Check';
 
 import './vehicleTable.css';
 
@@ -28,6 +27,7 @@ export default function VehicleTable({
 }: Readonly<VehicleTableProps>) {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handlePaginationModelChange = (newModel: { page: number; pageSize: number }) => {
     onPaginationChange(newModel.page + 1, newModel.pageSize);
@@ -40,6 +40,16 @@ export default function VehicleTable({
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setSelectedVehicle(null);
+  };
+
+  const handleEditVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
     setSelectedVehicle(null);
   };
 
@@ -83,49 +93,22 @@ export default function VehicleTable({
     },
     {
       field: "edit",
-      headerName: "",
+      headerName: "Editar",
       flex: 0.5,
-      minWidth: 60,
+      minWidth: 80,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
         <IconButton
           aria-label="editar"
           color="primary"
-          onClick={() => handleEditClient(params.row)}
+          onClick={() => handleEditVehicle(params.row)}
         >
           <ModeEditIcon />
         </IconButton>
       ),
     },
-    {
-      field: "delete",
-      headerName: "",
-      flex: 0.5,
-      minWidth: 60,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <IconButton
-          aria-label={params.row.isActive ? "desactivar cliente" : "activar cliente"}
-          color={params.row.isActive ? "error" : "success"}
-          onClick={() => handleOpenDeleteModal(params.row)}
-        >
-          {params.row.isActive ? <DeleteIcon /> : <CheckIcon />}
-        </IconButton>
-      ),
-    },
   ];
-
-const handleOpenDeleteModal = (vehicle: Vehicle) => {
-  // Lógica para abrir el modal de eliminación
-  console.log("Abrir modal de eliminación para el vehículo:", vehicle);
-};
-
-const handleEditClient = (vehicle: Vehicle) => {
-  // Lógica para editar el vehículo
-  console.log("Editar vehículo:", vehicle);
-};
 
   return (
     <div className="vehicletable-container">
@@ -155,7 +138,7 @@ const handleEditClient = (vehicle: Vehicle) => {
           paginationMode="server"
           rowCount={pagination?.total || 0}
           onCellDoubleClick={(params) => {
-            if (params.field === "delete" || params.field === "edit") return;
+            if (params.field === "edit") return;
             handleViewVehicles(params.row);
           }}
           pageSizeOptions={[10, 25, 50]}
@@ -171,6 +154,28 @@ const handleEditClient = (vehicle: Vehicle) => {
           <ModalViewVehicle
             onClose={handleCloseModal}
             initialValues={selectedVehicle} // Pasa los datos del vehículo al modal
+          />
+        )}
+      </Dialog>
+
+      <Dialog open={isEditModalOpen} onClose={handleCloseEditModal} maxWidth="md" fullWidth>
+        {selectedVehicle && (
+          <ModalEditVehicle
+            onClose={handleCloseEditModal}
+            vehicleId={selectedVehicle.id}
+            initialData={{
+              ...selectedVehicle,
+              images: selectedVehicle.url_images
+                ? [
+                    {
+                      base64: selectedVehicle.url_images,
+                      name: "imagen-vehiculo.jpg",
+                    },
+                  ]
+                : [],
+            }}
+            onVehicleEdited={handleCloseEditModal}
+            imageUrl={selectedVehicle.url_images}
           />
         )}
       </Dialog>

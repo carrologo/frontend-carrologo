@@ -78,9 +78,9 @@ export default function DataTable({
     },
     {
       field: "edit",
-      headerName: "",
+      headerName: "Editar",
       flex: 0.5,
-      minWidth: 60,
+      minWidth: 80,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -95,9 +95,9 @@ export default function DataTable({
     },
     {
       field: "delete",
-      headerName: "",
-      flex: 0.5,
-      minWidth: 60,
+      headerName: "Habilitar/Deshabilitar",
+      flex: 1,
+      minWidth: 160,
       sortable: false,
       filterable: false,
       renderCell: (params) => (

@@ -130,6 +130,7 @@ const StatsCards = () => {
                     <Avatar
                       className="stats-card-avatar"
                       sx={{
+                        backgroundColor: "white",
                         color: stat.bgColor,
                       }}
                     >

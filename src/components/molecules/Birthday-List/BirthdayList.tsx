@@ -68,7 +68,12 @@ const BirthdateList = () => {
   }, []);
 
   return (
-    <Card>
+    <Card sx={{ 
+      height: { xs: 'auto', sm: '70vh', md: '75vh' },
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: { xs: '300px', sm: '400px' }
+    }}>
       <CardHeader
         avatar={<Cake sx={{ color: "#1e76e9ff" }} />}
         title={
@@ -77,7 +82,7 @@ const BirthdateList = () => {
           </Typography>
         }
       />
-      <CardContent>
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
@@ -90,7 +95,11 @@ const BirthdateList = () => {
             </Typography>
           </Box>
         ) : (
-          <List sx={{ maxHeight: 300, overflow: "auto" }}>
+          <List sx={{ 
+            maxHeight: { xs: '40vh', sm: '50vh', md: '60vh' }, 
+            overflow: "auto",
+            minHeight: { xs: '200px', sm: '250px', md: '300px' }
+          }}>
             {clientesProximos.map(({ cliente, diasFaltantes }) => (
               <ListItem
                 key={cliente.id}

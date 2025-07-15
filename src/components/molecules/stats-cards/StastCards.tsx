@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -16,11 +17,13 @@ import {
 
 import { getClients } from "../../../services/clients.service";
 import { getVehicles } from "../../../services/vehicles.service";
+import "./StatsCards.css";
 
 const StatsCards = () => {
   const [totalClients, setTotalClients] = useState<number>(0);
   const [totalVehicles, setTotalVehicles] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,38 +53,45 @@ const StatsCards = () => {
       value: totalClients,
       icon: People,
       bgColor: "rgba(80, 174, 252, 0.8)",
+      route: "/clientes",
+      clickable: true,
     },
     {
       title: "Vehículos totales",
       value: totalVehicles,
       icon: DirectionsCar,
       bgColor: "rgba(80, 174, 252, 0.8)",
+      route: "/vehiculos",
+      clickable: true,
     },
     {
       title: "Transacciones totales",
       value: 0,
       icon: Receipt,
       bgColor: "#3acc3e98",
+      route: "/transactions",
+      clickable: false,
     },
     {
       title: "Transacciones pendientes",
       value: 0,
       icon: Schedule,
       bgColor: "#ffb950ff",
+      route: "/transactions",
+      clickable: false,
     },
   ];
 
+  const handleCardClick = (stat: typeof stats[0]) => {
+    if (stat.clickable && stat.route) {
+      navigate(stat.route);
+    }
+  };
+
   return (
-    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, mb: 4 }}>
+    <Box className="stats-container">
       {loading ? (
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            py: 6,
-          }}
-        >
+        <Box className="stats-loading">
           <CircularProgress />
         </Box>
       ) : (
@@ -90,32 +100,17 @@ const StatsCards = () => {
           return (
             <Box
               key={index}
-              sx={{
-                flex: {
-                  xs: "1 1 100%",
-                  sm: "1 1 calc(50% - 24px)",
-                  md: "1 1 calc(25% - 24px)",
-                },
-              }}
+              className="stats-card-wrapper"
             >
               <Card
+                onClick={() => handleCardClick(stat)}
+                className={`stats-card ${stat.clickable ? 'clickable' : ''}`}
                 sx={{
                   backgroundColor: stat.bgColor,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  "&:hover": {
-                    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.7)",
-                  },
-                  transition: "box-shadow 0.3s ease",
                 }}
               >
                 <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
+                  <Box className="stats-card-content">
                     <Box>
                       <Typography
                         variant="body1"
@@ -133,10 +128,8 @@ const StatsCards = () => {
                       </Typography>
                     </Box>
                     <Avatar
+                      className="stats-card-avatar"
                       sx={{
-                        bgcolor: "white",
-                        width: 56,
-                        height: 56,
                         color: stat.bgColor,
                       }}
                     >

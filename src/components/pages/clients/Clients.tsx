@@ -32,14 +32,12 @@ const Clients = () => {
 
   return( 
     <main className="clients-container">
-      <div className="clients-header">
-        <DataTable
-          dataTable={clients}
-          onClientsUpdated={handleFetchClients}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-        />
-      </div>
+      <DataTable
+        dataTable={clients}
+        onClientsUpdated={handleFetchClients}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+      />
     </main>
   )
 }

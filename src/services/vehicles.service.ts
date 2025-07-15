@@ -6,6 +6,7 @@ export interface CreateVehiclePost {
   type: string;
   brand: string;
   line: string;
+  plate: string;
   version: string;
   transmission: string;
   traction: string;

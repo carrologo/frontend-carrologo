@@ -52,6 +52,7 @@ const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehicl
     { value: "line", label: "Línea" },
     { value: "version", label: "Versión" },
     { value: "type", label: "Tipo" },
+    { value: "plate", label: "Placa" },
     { value: "model", label: "Año" },
     { value: "transmission", label: "Transmisión" },
     { value: "fuel_type", label: "Combustible" },

@@ -10,7 +10,7 @@ import {
   Client,
   ClientsTableData,
 } from "../../../interfaces/clients.interface";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Button,
   Dialog,
@@ -49,23 +49,25 @@ export default function DataTable({
   const [searchField, setSearchField] = useState("fullName"); // Campo de búsqueda predeterminado
 
   const columns: GridColDef[] = [
-    { field: "name", headerName: "Nombre", width: 150 },
-    { field: "lastName", headerName: "Apellido", width: 150 },
-    { field: "email", headerName: "Correo", width: 300 },
-    { field: "identification", headerName: "Identificación", width: 140 },
+    { field: "name", headerName: "Nombre", flex: 1, minWidth: 120 },
+    { field: "lastName", headerName: "Apellido", flex: 1, minWidth: 120 },
+    { field: "email", headerName: "Correo", flex: 1.5, minWidth: 200 },
+    { field: "identification", headerName: "Identificación", flex: 1, minWidth: 120 },
     {
       field: "birthdate",
       headerName: "Fecha de Nacimiento",
-      width: 140,
+      flex: 1.2,
+      minWidth: 140,
       renderCell: (params) =>
         params.value ? new Date(params.value).toLocaleDateString() : "",
     },
-    { field: "contact", headerName: "Contacto", width: 150 },
-    { field: "comment", headerName: "Observaciones", width: 230 },
+    { field: "contact", headerName: "Contacto", flex: 1, minWidth: 120 },
+    { field: "comment", headerName: "Observaciones", flex: 1.3, minWidth: 150 },
     {
       field: "isActive",
       headerName: "Estado",
-      width: 140,
+      flex: 0.8,
+      minWidth: 100,
       renderCell: (params) => (
         <span
           style={{ color: params.value ? "green" : "red", fontWeight: 500 }}
@@ -77,7 +79,8 @@ export default function DataTable({
     {
       field: "edit",
       headerName: "",
-      width: 60,
+      flex: 0.5,
+      minWidth: 60,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -93,7 +96,8 @@ export default function DataTable({
     {
       field: "delete",
       headerName: "",
-      width: 60,
+      flex: 0.5,
+      minWidth: 60,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -119,29 +123,6 @@ export default function DataTable({
     { value: "isActive", label: "Estado" },
   ];
 
-  // Como la paginación es del servidor, usamos los datos directamente
-  const filteredRows = useMemo(() => {
-    if (!searchTerm) return dataTable.data || [];
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return (dataTable.data || []).filter((row) => {
-      if (searchField === "fullName") {
-        const fullName = `${row.name} ${row.lastName}`.toLowerCase();
-        return fullName.includes(lowerSearchTerm);
-      }
-      if (searchField === "isActive") {
-        // Para el campo booleano, convertir a "activo" o "deshabilitado" y comparar
-        const status = row.isActive ? "activo" : "deshabilitado";
-        return status.toLowerCase().includes(lowerSearchTerm);
-      }
-      // Para los demás campos, buscar directamente
-      return row[searchField as keyof Client]
-        ?.toString()
-        .toLowerCase()
-        .includes(lowerSearchTerm);
-    });
-  }, [dataTable.data, searchTerm, searchField]);
-
   const handleViewClient = async (client: Client) => {
     try {
       setSelectedClient(client);
@@ -165,16 +146,32 @@ export default function DataTable({
     setOpenDeleteModal(true);
   };
 
+  const handlePaginationModelChange = (newModel: { page: number; pageSize: number }) => {
+    onPaginationModelChange(newModel);
+  };
+
+  // Debug temporal para verificar los datos
+  console.log('DataTable Debug:', {
+    dataTable,
+    totalRows: dataTable.data?.length || 0,
+    pagination: dataTable.pagination,
+    paginationModel
+  });
+
   return (
     <div className="datatable-container">
-      <Paper sx={{ height: "70vh", width: "100%" }}>
+      <Paper sx={{ 
+        height: "calc(100vh - 120px)", 
+        width: "100%",
+        display: "flex",
+        flexDirection: "column"
+      }}>
         <Typography
           variant="h1"
           component="div"
           fontSize={30}
-          sx={{ mt: 2 }}
+          sx={{ mt: 2, mb: 2, flexShrink: 0 }}
           align="center"
-          gutterBottom
         >
           Clientes
         </Typography>
@@ -187,6 +184,7 @@ export default function DataTable({
             flexDirection: { xs: "column", sm: "row" },
             alignItems: { xs: "center", sm: "flex-start" },
             gap: { xs: 2, sm: 0 },
+            flexShrink: 0
           }}
         >
           <Button
@@ -247,11 +245,11 @@ export default function DataTable({
         </Box>
 
         <DataGrid
-          rows={filteredRows}
+          rows={dataTable.data || []}
           columns={columns}
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           paginationModel={paginationModel}
-          onPaginationModelChange={onPaginationModelChange}
+          onPaginationModelChange={handlePaginationModelChange}
           paginationMode="server"
           rowCount={dataTable.pagination?.total || 0}
           onCellDoubleClick={(params) => {
@@ -262,7 +260,10 @@ export default function DataTable({
             sorting: { sortModel: [{ field: "name", sort: "asc" }] },
           }}
           pageSizeOptions={[10, 25, 50]}
-          sx={{ border: 0, overflow: "auto" }}
+          sx={{ 
+            border: 0,
+            flex: 1
+          }}
         />
       </Paper>
 

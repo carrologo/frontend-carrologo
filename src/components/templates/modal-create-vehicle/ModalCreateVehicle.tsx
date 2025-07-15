@@ -14,6 +14,7 @@ const fields1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
   { name: "line", label: "Linea", type: "text", required: true },
   { name: "type", label: "Tipo de Vehiculo", type: "text", required: true },
+  { name: "plate", label: "Placa", type: "text", required: true },
   { name: "version", label: "Versión", type: "text" },
   { name: "transmission", label: "Transmisión", type: "text" },
   { name: "traction", label: "Tipo de Traccion", type: "text" },
@@ -70,6 +71,7 @@ const validationSchema = Yup.object({
   brand: Yup.string().required("La marca es obligatoria"),
   line: Yup.string().required("La linea es obligatoria"),
   type: Yup.string().required("El tipo de vehiculo es obligatorio"),
+  plate: Yup.string().required("La placa es obligatoria"),
   version: Yup.string(),
   transmission: Yup.string(),
   traction: Yup.string(),
@@ -94,6 +96,7 @@ const initialValues = {
   brand: "",
   line: "",
   type: "",
+  plate: "",
   version: "",
   transmission: "",
   traction: "",
@@ -127,6 +130,7 @@ export const ModalCreateVehicle = ({
       try {
         const transformedData: CreateVehiclePost = {
           ...data,
+          plate: data.plate.toUpperCase(),
           model: new Date(data.model),
           soatDate: new Date(data.soat),
           technicalReviewDate: new Date(data.technicalReview),

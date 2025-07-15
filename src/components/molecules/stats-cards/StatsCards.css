@@ -1,0 +1,59 @@
+.stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stats-loading {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.stats-card-wrapper {
+  flex: 1 1 100%;
+}
+
+@media (min-width: 600px) {
+  .stats-card-wrapper {
+    flex: 1 1 calc(50% - 24px);
+  }
+}
+
+@media (min-width: 900px) {
+  .stats-card-wrapper {
+    flex: 1 1 calc(25% - 24px);
+  }
+}
+
+.stats-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stats-card.clickable {
+  cursor: pointer;
+}
+
+.stats-card.clickable:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  transform: translateY(-2px);
+}
+
+.stats-card:not(.clickable):hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats-card-avatar {
+  background-color: white;
+  width: 56px;
+  height: 56px;
+}

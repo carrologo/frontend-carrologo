@@ -7,6 +7,7 @@ const fields: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true, disabled: true },
   { name: "line", label: "Linea", type: "text", required: true, disabled: true },
   { name: "type", label: "Tipo de Vehiculo", type: "text", required: true ,disabled: true},
+  { name: "plate", label: "Placa", type: "text", required: true, disabled: true },
   { name: "version", label: "Versión", type: "text", disabled: true },
   { name: "transmission", label: "Transmisión", type: "text", disabled: true },
   { name: "traction", label: "Tipo de Traccion", type: "text", disabled: true },

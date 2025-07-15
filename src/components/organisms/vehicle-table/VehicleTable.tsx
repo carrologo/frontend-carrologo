@@ -44,42 +44,48 @@ export default function VehicleTable({
   };
 
   const columns: GridColDef[] = [
-    { field: 'brand', headerName: 'Marca', width: 120 },
-    { field: 'line', headerName: 'Línea', width: 120 },
-    { field: 'version', headerName: 'Versión', width: 120 },
-    { field: 'type', headerName: 'Tipo de Vehículo', width: 100 },
+    { field: 'brand', headerName: 'Marca', flex: 1, minWidth: 100 },
+    { field: 'line', headerName: 'Línea', flex: 1, minWidth: 100 },
+    { field: 'version', headerName: 'Versión', flex: 1, minWidth: 100 },
+    { field: 'type', headerName: 'Tipo de Vehículo', flex: 1.2, minWidth: 120 },
+    { field: 'plate', headerName: 'Placa', flex: 0.8, minWidth: 80 },
     {
       field: 'model',
       headerName: 'Año',
-      width: 100,
+      flex: 0.7,
+      minWidth: 70,
       renderCell: (params) => new Date(params.value).getFullYear(),
     },
-    { field: 'transmission', headerName: 'Transmisión', width: 120 },
-    { field: 'traction', headerName: 'Tipo de Tracción', width: 120 },
-    { field: 'fuel_type', headerName: 'Combustible', width: 120 },
+    { field: 'transmission', headerName: 'Transmisión', flex: 1, minWidth: 100 },
+    { field: 'traction', headerName: 'Tipo de Tracción', flex: 1.2, minWidth: 120 },
+    { field: 'fuel_type', headerName: 'Combustible', flex: 1, minWidth: 100 },
     {
       field: 'kms',
       headerName: 'Kilometraje',
-      width: 120,
+      flex: 1,
+      minWidth: 100,
       renderCell: (params) => `${params.value.toLocaleString()} km`,
     },
     {
       field: 'displacement',
       headerName: 'Cilindrada',
-      width: 100,
+      flex: 0.8,
+      minWidth: 80,
       renderCell: (params) => `${params.value} cc`,
     },
-    { field: 'seat_material', headerName: 'Material Asientos', width: 150 },
+    { field: 'seat_material', headerName: 'Material Asientos', flex: 1.3, minWidth: 130 },
     {
       field: 'airbags',
       headerName: 'Airbags',
-      width: 100,
+      flex: 0.7,
+      minWidth: 70,
       renderCell: (params) => (params.value ? 'Sí' : 'No'),
     },
     {
       field: "edit",
       headerName: "",
-      width: 60,
+      flex: 0.5,
+      minWidth: 60,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -95,7 +101,8 @@ export default function VehicleTable({
     {
       field: "delete",
       headerName: "",
-      width: 60,
+      flex: 0.5,
+      minWidth: 60,
       sortable: false,
       filterable: false,
       renderCell: (params) => (
@@ -122,14 +129,19 @@ const handleEditClient = (vehicle: Vehicle) => {
 
   return (
     <div className="vehicletable-container">
-      <Paper sx={{ height: '100%', width: '100%', p: 2 }}>
+      <Paper sx={{ 
+        height: 'calc(100vh - 250px)', 
+        width: '100%', 
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
         <Typography
           variant="h1"
           component="div"
           fontSize={30}
-          sx={{ mt: 2 }}
+          sx={{ mt: 2, mb: 2, flexShrink: 0 }}
           align="center"
-          gutterBottom
         >
           Vehículos
         </Typography>
@@ -147,7 +159,10 @@ const handleEditClient = (vehicle: Vehicle) => {
             handleViewVehicles(params.row);
           }}
           pageSizeOptions={[10, 25, 50]}
-          sx={{ border: 0, overflow: 'auto' }}
+          sx={{ 
+            border: 0,
+            flex: 1
+          }}
         />
       </Paper>
 

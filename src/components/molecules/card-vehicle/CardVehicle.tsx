@@ -50,6 +50,9 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
         />
         <CardContent>
           <p>
+            <strong>Placa:</strong> {vehicle.plate}
+          </p>
+          <p>
             <strong>Cilindraje:</strong> {vehicle.displacement} cc
           </p>
           <p>

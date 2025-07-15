@@ -14,40 +14,74 @@ import {
 } from "@mui/material";
 import { TabPanel } from "../../atoms/tabPanel/TabPanel";
 import { Transaction } from "../../../interfaces/transactions.interface";
+import { getTransactionStatusName, transactionStatusMap } from "../../../utils/transactionStatus.utils";
+import ActiveTransactions from "../../organisms/active-transactions/ActiveTransactions";
+import TransactionsTable from "../../organisms/transactions-table/TransactionsTable";
 
 interface TabsTransactionsProps {
   dataTransactions: Transaction[];
+  onUpdateTransactions: (page?: number, limit?: number) => void;
   pagination?: { page: number; total: number };
 }
 
 const TabsTransactions = ({
-  dataTransactions,
+  dataTransactions = [],
+  onUpdateTransactions,
   pagination,
 }: TabsTransactionsProps) => {
   const [value, setValue] = useState("1");
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchField, setSearchField] = useState("comprador");
+  const [searchField, setSearchField] = useState("id_buyer");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 50,
+  });
 
   const handleChange = (newValue: string) => setValue(newValue);
 
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPaginationModel({ page: page - 1, pageSize });
+    onUpdateTransactions(page, pageSize);
+  };
+
   const searchOptions = [
-    { value: "comprador", label: "Comprador" },
-    { value: "vendedor", label: "Vendedor" },
-    { value: "vehiculo", label: "Vehículo" },
-    { value: "placa", label: "Placa" },
-    { value: "estado", label: "Estado" },
-    { value: "monto", label: "Monto" },
+    { value: "id_buyer", label: "Comprador" },
+    { value: "id_seller", label: "Vendedor" },
+    { value: "id_vehicle", label: "Vehículo" },
+    { value: "id_status", label: "Estado" },
+    { value: "amount", label: "Monto" },
+    { value: "description", label: "Descripción" },
   ];
 
   const filteredTransactions = useMemo(() => {
-    if (!searchTerm) return dataTransactions;
+    let filtered = dataTransactions;
 
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return dataTransactions.filter((t) => {
-      const value = t[searchField as keyof Transaction];
-      return value?.toString().toLowerCase().includes(lowerSearchTerm);
-    });
-  }, [dataTransactions, searchTerm, searchField]);
+    // Filtrar por estado si no es "all"
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(transaction => transaction.id_status.toString() === statusFilter);
+    }
+
+    // Filtrar por término de búsqueda
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter((transaction) => {
+        if (searchField === "amount") {
+          return transaction.amount.toString().includes(searchTerm);
+        } else if (searchField === "id_status") {
+          // Buscar tanto por ID como por nombre del estado
+          const statusName = getTransactionStatusName(transaction.id_status.toString()).toLowerCase();
+          return transaction.id_status.toString().includes(searchTerm) || statusName.includes(lowerSearchTerm);
+        }
+        return transaction[searchField as keyof Transaction]
+          ?.toString()
+          .toLowerCase()
+          .includes(lowerSearchTerm);
+      });
+    }
+
+    return filtered;
+  }, [dataTransactions, searchTerm, searchField, statusFilter]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -82,6 +116,29 @@ const TabsTransactions = ({
             gap: { xs: 2, sm: 1 },
           }}
         >
+          <FormControl
+            size="small"
+            sx={{
+              minWidth: { xs: "100%", sm: 120 },
+              maxWidth: { xs: "300px" },
+            }}
+          >
+            <InputLabel id="status-filter-label">Filtrar por estado</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              value={statusFilter}
+              label="Filtrar por estado"
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <MenuItem value="all">Todos</MenuItem>
+              {Object.entries(transactionStatusMap).map(([id, name]) => (
+                <MenuItem key={id} value={id}>
+                  {name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <FormControl
             size="small"
             sx={{
@@ -129,6 +186,24 @@ const TabsTransactions = ({
           <Tab icon={<ListIcon />} value="2" />
         </Tabs>
       </Box>
+      
+      <TabPanel value={value} index="1">
+        <ActiveTransactions 
+          transactions={filteredTransactions} 
+          pagination={pagination}
+          paginationModel={paginationModel}
+          onPaginationChange={handlePaginationChange}
+        />
+      </TabPanel>
+      
+      <TabPanel value={value} index="2">
+        <TransactionsTable 
+          transactions={filteredTransactions} 
+          pagination={pagination}
+          paginationModel={paginationModel}
+          onPaginationChange={handlePaginationChange}
+        />
+      </TabPanel>
     </Box>
   );
 };

@@ -3,9 +3,9 @@
 .ticket {
   position: relative;
   box-sizing: border-box;
-  width: 385px;
+  width: auto;
   height: 350px;
-  margin: 8px auto 0;
+  margin: 16px auto 0;
   padding: 8px;
   border-radius: 8px;
   background: #fbfbfb;
@@ -17,7 +17,7 @@
     position: absolute;
     left: 5px;
     height: 6px;
-    width: 370px;
+    width: calc(100% - 15px);
   }
 
   &:before {

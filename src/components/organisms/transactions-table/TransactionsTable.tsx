@@ -16,13 +16,17 @@ interface TransactionsTableProps {
   pagination?: { page: number; total: number };
   paginationModel: { page: number; pageSize: number };
   onPaginationChange: (page: number, pageSize: number) => void;
+  onViewTransaction?: (transactionId: string) => void;
+  onEditTransaction?: (transactionId: string) => void;
 }
 
 export default function TransactionsTable({ 
   transactions = [], 
   pagination, 
   paginationModel, 
-  onPaginationChange 
+  onPaginationChange,
+  onViewTransaction,
+  onEditTransaction
 }: Readonly<TransactionsTableProps>) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,18 +37,28 @@ export default function TransactionsTable({
   };
 
   const handleViewTransaction = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-    setIsModalOpen(true);
+    if (onViewTransaction) {
+      onViewTransaction(transaction.id_transaction.toString());
+    } else {
+      // Comportamiento por defecto si no se pasa la función
+      setSelectedTransaction(transaction);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    if (onEditTransaction) {
+      onEditTransaction(transaction.id_transaction.toString());
+    } else {
+      // Comportamiento por defecto si no se pasa la función
+      setSelectedTransaction(transaction);
+      setIsEditModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedTransaction(null);
-  };
-
-  const handleEditTransaction = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
-    setIsEditModalOpen(true);
   };
 
   const handleCloseEditModal = () => {

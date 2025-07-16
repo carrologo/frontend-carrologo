@@ -18,6 +18,8 @@ import { transactionStatusMap } from "../../../utils/transactionStatus.utils";
 import ActiveTransactions from "../../organisms/active-transactions/ActiveTransactions";
 import TransactionsTable from "../../organisms/transactions-table/TransactionsTable";
 import { ModalCreateTransaction } from "../../templates/modal-create-transaction/ModalCreateTransaction";
+import { ModalViewTransaction } from "../../templates/modal-view-transaction/ModalViewTransaction";
+import { ModalEditTransaction } from "../../templates/modal-edit-transaction/ModalEditTransaction";
 
 interface TabsTransactionsProps {
   dataTransactions: Transaction[];
@@ -32,6 +34,9 @@ const TabsTransactions = ({
 }: TabsTransactionsProps) => {
   const [value, setValue] = useState("1");
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("buyerInfo");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -48,6 +53,32 @@ const TabsTransactions = ({
   };
 
   const handleCreateTransaction = () => {
+    onUpdateTransactions(paginationModel.page + 1, paginationModel.pageSize);
+  };
+
+  const handleViewTransaction = (transactionId: string) => {
+    setSelectedTransactionId(transactionId);
+    setOpenViewModal(true);
+  };
+
+  const handleEditTransaction = (transactionId: string) => {
+    setSelectedTransactionId(transactionId);
+    setOpenEditModal(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setOpenViewModal(false);
+    setSelectedTransactionId(null);
+  };
+
+  const handleCloseEditModal = () => {
+    setOpenEditModal(false);
+    setSelectedTransactionId(null);
+  };
+
+  const handleEditSuccess = () => {
+    setOpenEditModal(false);
+    setSelectedTransactionId(null);
     onUpdateTransactions(paginationModel.page + 1, paginationModel.pageSize);
   };
 
@@ -210,6 +241,8 @@ const TabsTransactions = ({
           pagination={pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
+          onViewTransaction={handleViewTransaction}
+          onEditTransaction={handleEditTransaction}
         />
       </TabPanel>
       
@@ -219,6 +252,8 @@ const TabsTransactions = ({
           pagination={pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
+          onViewTransaction={handleViewTransaction}
+          onEditTransaction={handleEditTransaction}
         />
       </TabPanel>
 
@@ -226,6 +261,19 @@ const TabsTransactions = ({
         open={openCreateModal}
         onClose={() => setOpenCreateModal(false)}
         onTransactionCreated={handleCreateTransaction}
+      />
+
+      <ModalViewTransaction
+        open={openViewModal}
+        onClose={handleCloseViewModal}
+        transactionId={selectedTransactionId}
+      />
+
+      <ModalEditTransaction
+        open={openEditModal}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
+        transactionId={selectedTransactionId ? parseInt(selectedTransactionId) : 0}
       />
     </Box>
   );

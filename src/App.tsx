@@ -7,12 +7,14 @@ import Vehicles from './components/pages/vehicles/Vehicles.tsx'
 import Transactions from './components/pages/transactions/Transactions.tsx'
 import Home from './components/pages/home/home.tsx'
 import ProtectedRoute from './components/organisms/protected-route/ProtectedRoute'
+import TestDocumentUpload from './components/test/TestDocumentUpload'
 
 function App() {
 
   return (
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/test-upload" element={<TestDocumentUpload />} />
         <Route element={
           <ProtectedRoute>
             <Header />

@@ -8,9 +8,15 @@ import ModeEditIcon from "@mui/icons-material/ModeEdit";
 
 interface TransactionCardProps {
   transaction: Transaction;
+  onViewTransaction?: (transactionId: string) => void;
+  onEditTransaction?: (transactionId: string) => void;
 }
 
-const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
+const TransactionCard: React.FC<TransactionCardProps> = ({ 
+  transaction, 
+  onViewTransaction, 
+  onEditTransaction 
+}) => {
   const statusName = transaction.statusInfo ? transaction.statusInfo.name : getTransactionStatusName(transaction.id_status?.toString() || '1');
   const statusColor = getTransactionStatusColor(transaction.id_status?.toString() || '1');
 
@@ -43,12 +49,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
           <p className="p-transactions-description"><strong>Descripción:</strong> {transaction.description || 'Sin descripción'}</p>
         </div>
         
-        <div className="ticket__footer">
-          <Button 
+        <div className="ticket__footer">            <Button
             size="small"
             variant="text"
             color="primary"
             className="card-transaction-button"
+            onClick={() => onViewTransaction?.(transaction.id_transaction.toString())}
             >
             Ver detalles
             </Button>
@@ -56,6 +62,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
             size="small"
             startIcon={<ModeEditIcon />}
             className="card-vehicle-button"
+            onClick={() => onEditTransaction?.(transaction.id_transaction.toString())}
           >
             Editar
           </Button>
@@ -64,7 +71,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
             variant="outlined" 
             color="primary" 
             className="card-transaction-button"
-            onClick={() => window.open(transaction.url_documents || transaction.documents || '', '_blank')}
+            onClick={() => {
+              const documentUrl = transaction.url_documents || transaction.documents;
+              if (documentUrl) {
+                window.open(documentUrl, '_blank');
+              }
+            }}
             disabled={!transaction.url_documents && !transaction.documents}
           >
             Ver documentos

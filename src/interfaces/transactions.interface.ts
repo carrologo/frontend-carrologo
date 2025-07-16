@@ -1,4 +1,3 @@
-
 export interface Transaction {
   id_transaction: number;
   id_buyer: number | null;
@@ -32,6 +31,18 @@ export interface Transaction {
   };
 }
 //import { Image } from "./commons.interface"
+
+export interface UpdateTransactionPost {
+  id_buyer: number | null;
+  id_seller: number | null;
+  id_vehicle: number | null;
+  amount: number | null;
+  start_date: string;
+  close_date?: string | null;
+  description?: string | null;
+  documents?: string;
+  id_status: number;
+}
 
 export interface TransactionTableData {
   data : Transaction[];

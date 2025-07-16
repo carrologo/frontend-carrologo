@@ -1,13 +1,13 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
 import { updateVehicle } from "../../../services/vehicles.service";
-import { Image } from "../../../interfaces/commons.interface";
 import { CreateVehiclePost } from "../../../services/vehicles.service";
 import dayjs from 'dayjs';
 import { useState } from "react";
 import { useFormik } from "formik";
 import MultiStepModal from "../../organisms/multi-step-modal/MultiStepModal";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
+import { Document } from "../../molecules/document-manager/DocumentManager";
 
 const field1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
@@ -23,14 +23,10 @@ const field1: FieldConfig[] = [
   { name: "displacement", label: "Cilindrada", type: "number" },
   { name: "seatMaterial", label: "Material de Asientos", type: "text" },
   { name: "airbags", label: "Airbags", type: "boolean" },
-  { name: "images", label: "Subir Imagenes", type: "file", multiple: true,  },
 ];
 
 const field2: FieldConfig[] = [
-  { name: "soat", label: "SOAT", type: "date", views: ["year"], required: true },
-  { name: "technicalReview", label: "Revisión Técnica", type: "date", views: ["year"], required: true },
-  { name: "propertyCard", label: "Tarjeta de Propiedad", type: "date", required: true },
-  { name: "secure", label: "Seguro", type: "date", required: true },
+  { name: "documents", label: "Documentos del Vehículo", type: "documents", required: true },
 ];
 
 const steps = [
@@ -52,13 +48,15 @@ const validationSchema = Yup.object({
   displacement: Yup.number(),
   seatMaterial: Yup.string(),
   airbags: Yup.boolean(),
-  images: Yup.array(),
-
-  // Validaciones para los campos adicionales
-  soat: Yup.date().required("El SOAT es obligatorio"),
-  technicalReview: Yup.date().required("La revisión técnica es obligatoria"),
-  propertyCard: Yup.date().required("La tarjeta de propiedad es obligatoria"),
-  secure: Yup.date().required("El seguro es obligatorio"),
+  documents: Yup.array()
+    .of(
+      Yup.object({
+        documentTypeId: Yup.number().required("El tipo de documento es obligatorio"),
+        expirationDate: Yup.string().required("La fecha de vencimiento es obligatoria"),
+      })
+    )
+    .min(1, "Debe agregar al menos un documento")
+    .required("Los documentos son obligatorios"),
 });
 
 interface ModalEditVehicleProps { 
@@ -76,12 +74,14 @@ export const ModalEditVehicle = ({
   onVehicleEdited,
   imageUrl,
 }: ModalEditVehicleProps) => {
+  const [documentsLoading, setDocumentsLoading] = useState(false);
 
 const parsedInitialData = {
   ...initialData,
   fuelType: initialData.fuel_type,
   seatMaterial: initialData.seat_material,
   model: dayjs(initialData.model),
+  documents: initialData.documents || [], // Agregar documents vacío si no existe
 };
 
 
@@ -94,22 +94,24 @@ const parsedInitialData = {
     },
   });
 
-const handleUpdate = async (data: Record<string, any>) => {
+const handleUpdate = async (data: Record<string, unknown>) => {
   try {
-    const transformedData: CreateVehiclePost = {
-      ...data,
-      plate: data.plate.toUpperCase(),
-      model: dayjs(data.model).toISOString(),
-      soat: dayjs(data.soat).toISOString(),
-      technicalReview: dayjs(data.technicalReview).toISOString(),
-      propertyCard: dayjs(data.propertyCard).toISOString(),
-      secure: dayjs(data.secure).toISOString(),
-      fuel_type: data.fuelType,
-      seat_material: data.seatMaterial,
-      images: data.images.map((image: Image) => ({
-        ...image,
-        base64: image.base64.replace(/^data:image\/[a-z]+;base64,/, ""),
-      })),
+    const transformedData: Partial<CreateVehiclePost> = {
+      type: data.type as string,
+      brand: data.brand as string,
+      line: data.line as string,
+      plate: String(data.plate).toUpperCase(),
+      version: data.version as string,
+      transmission: data.transmission as string,
+      traction: data.traction as string,
+      fuelType: data.fuelType as string,
+      kms: data.kms as number,
+      model: dayjs(data.model as string).toISOString(),
+      displacement: data.displacement as number,
+      seatMaterial: data.seatMaterial as string,
+      airbags: data.airbags as boolean,
+      documents: data.documents as Document[] || [],
+      // No incluir images para que no se toquen las existentes
     };
     await updateVehicle(vehicleId, transformedData);
     onVehicleEdited();
@@ -147,6 +149,8 @@ const handleUpdate = async (data: Record<string, any>) => {
       onSubmit={formik.handleSubmit}
       isSubmitting={formik.isSubmitting}
       canProceed={true}
+      submitButtonText="Actualizar Vehículo"
+      submittingText="Actualizando..."
     >
       {/* Renderiza los campos del paso actual */}
       {steps.map((step, index) => (
@@ -156,6 +160,7 @@ const handleUpdate = async (data: Record<string, any>) => {
       formik={formik}
       isEditMode={true}
       imageUrl={imageUrl}
+      onDocumentsLoadingChange={setDocumentsLoading}
     />
   ))}
     </MultiStepModal>

@@ -9,6 +9,7 @@ import {
 import { Image } from "../../../interfaces/commons.interface";
 import { useFormik } from "formik";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
+import { Document } from "../../molecules/document-manager/DocumentManager";
 
 const fields1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
@@ -39,27 +40,7 @@ const fields1: FieldConfig[] = [
 ];
 
 const fields2: FieldConfig[] = [
-  {
-    name: "soat",
-    label: "SOAT",
-    type: "date",
-    views: ["year"],
-    required: true,
-  },
-  {
-    name: "technicalReview",
-    label: "Revisión Técnica",
-    type: "date",
-    views: ["year"],
-    required: true,
-  },
-  {
-    name: "propertyCard",
-    label: "Tarjeta de Propiedad",
-    type: "date",
-    required: true,
-  },
-  { name: "secure", label: "Seguro", type: "date", required: true },
+  { name: "documents", label: "Documentos del Vehículo", type: "documents", required: true },
 ];
 
 const steps = [
@@ -84,12 +65,15 @@ const validationSchema = Yup.object({
   seatMaterial: Yup.string(),
   airbags: Yup.boolean(),
   images: Yup.array(),
-
-  // Validaciones para los campos adicionales
-  soat: Yup.date().required("El SOAT es obligatorio"),
-  technicalReview: Yup.date().required("La revisión técnica es obligatoria"),
-  propertyCard: Yup.date().required("La tarjeta de propiedad es obligatoria"),
-  secure: Yup.date().required("El seguro es obligatorio"),
+  documents: Yup.array()
+    .of(
+      Yup.object({
+        documentTypeId: Yup.number().required("El tipo de documento es obligatorio"),
+        expirationDate: Yup.string().required("La fecha de vencimiento es obligatoria"),
+      })
+    )
+    .min(1, "Debe agregar al menos un documento")
+    .required("Los documentos son obligatorios"),
 });
 
 const initialValues = {
@@ -107,10 +91,7 @@ const initialValues = {
   seatMaterial: "",
   airbags: false,
   images: [],
-  soat: "",
-  technicalReview: "",
-  propertyCard: "",
-  technicalSheet: "",
+  documents: [],
 };
 
 interface ModalCreateVehicleProps {
@@ -123,19 +104,29 @@ export const ModalCreateVehicle = ({
   onVehicleCreated,
 }: ModalCreateVehicleProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
   const formik = useFormik({
     initialValues,
     validationSchema,
-    onSubmit: async (data: any) => {
+    onSubmit: async (data: Record<string, unknown>) => {
       try {
         const transformedData: CreateVehiclePost = {
-          ...data,
-          plate: data.plate.toUpperCase(),
-          model: new Date(data.model),
-          soatDate: new Date(data.soat),
-          technicalReviewDate: new Date(data.technicalReview),
+          type: data.type as string,
+          brand: data.brand as string,
+          line: data.line as string,
+          plate: String(data.plate).toUpperCase(),
+          version: data.version as string,
+          transmission: data.transmission as string,
+          traction: data.traction as string,
+          fuelType: data.fuelType as string,
+          kms: data.kms as number,
+          model: new Date(data.model as string).toISOString(),
+          displacement: data.displacement as number,
+          seatMaterial: data.seatMaterial as string,
+          airbags: data.airbags as boolean,
+          documents: data.documents as Document[] || [],
           images:
-            data.images?.map((image: Image) => ({
+            (data.images as Image[])?.map((image: Image) => ({
               ...image,
               base64: image.base64?.replace(/^data:image\/[a-z]+;base64,/, ""),
             })) || [],
@@ -151,21 +142,33 @@ export const ModalCreateVehicle = ({
 
   // Función para determinar si se puede proceder al siguiente paso
   const canProceedToNext = useMemo(() => {
+    // Si estamos en el paso de documentos y está cargando, no permitir avanzar
+    if (currentStep === 1 && documentsLoading) {
+      return false;
+    }
+
     const currentStepFields = steps[currentStep].fields;
     const requiredFields = currentStepFields.filter((field) => field.required);
 
     return requiredFields.every((field) => {
-      const fieldValue = (formik.values as Record<string, unknown>)[field.name];
+      const fieldValue = (formik.values as Record<string, unknown>)[field.name];        // Para campos numéricos, permitir el valor 0
+        if (field.type === "number") {
+          return (
+            fieldValue !== null &&
+            fieldValue !== undefined &&
+            fieldValue !== "" &&
+            !(formik.errors as Record<string, unknown>)[field.name]
+          );
+        }
 
-      // Para campos numéricos, permitir el valor 0
-      if (field.type === "number") {
-        return (
-          fieldValue !== null &&
-          fieldValue !== undefined &&
-          fieldValue !== "" &&
-          !(formik.errors as Record<string, unknown>)[field.name]
-        );
-      }
+        // Para campos de documentos, verificar que tenga al menos uno
+        if (field.type === "documents") {
+          return (
+            Array.isArray(fieldValue) &&
+            fieldValue.length > 0 &&
+            !(formik.errors as Record<string, unknown>)[field.name]
+          );
+        }
 
       // Para otros tipos de campos
       return (
@@ -175,7 +178,7 @@ export const ModalCreateVehicle = ({
         !(formik.errors as Record<string, unknown>)[field.name]
       );
     });
-  }, [currentStep, formik.values, formik.errors]);
+  }, [currentStep, formik.values, formik.errors, documentsLoading]);
 
   const handleNext = async () => {
     if (currentStep < steps.length - 1) {
@@ -209,6 +212,15 @@ export const ModalCreateVehicle = ({
             fieldValue === null ||
             fieldValue === undefined ||
             fieldValue === "" ||
+            (errors as Record<string, unknown>)[field.name]
+          );
+        }
+
+        // Para campos de documentos, verificar que tenga al menos uno
+        if (field.type === "documents") {
+          return (
+            !Array.isArray(fieldValue) ||
+            fieldValue.length === 0 ||
             (errors as Record<string, unknown>)[field.name]
           );
         }
@@ -254,6 +266,7 @@ export const ModalCreateVehicle = ({
           key={`step-${step.title}-${index}`}
           fields={step.fields}
           formik={formik}
+          onDocumentsLoadingChange={setDocumentsLoading}
         />
       ))}
     </MultiStepModal>

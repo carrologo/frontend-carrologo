@@ -1,6 +1,6 @@
 import { doGet, doPost, doPatch } from "../core/api/api";
 import { Client, ClientsTableData } from "../interfaces/clients.interface";
-import { showErrorToast, showSuccessToast } from "../utils/toast.utils";
+import { showErrorToast, showLoadingToast, updateToast } from "../utils/toast.utils";
 
 export interface CreateClientPost {
   name: string;
@@ -13,11 +13,12 @@ export interface CreateClientPost {
 }
 
 export const createClient = async <T>( values: CreateClientPost ): Promise<void> => {
+  const toastId = showLoadingToast('Creando cliente...');
   try {
     await doPost<T, typeof values>('/clients', values, 'client');
-    showSuccessToast('Cliente creado exitosamente');
+    updateToast(toastId, 'Cliente creado exitosamente', 'success');
   } catch (error) {
-    showErrorToast(error, 'Error al crear el cliente');
+    updateToast(toastId, 'Error al crear el cliente', 'error');
     throw error;
   }
 };
@@ -46,11 +47,12 @@ export const updateClient = async <T>(
   id: number,
   values: Partial<CreateClientPost> & { isActive?: boolean }
 ): Promise<void> => {
+  const toastId = showLoadingToast('Actualizando cliente...');
   try {
     await doPatch<T, typeof values>(`/clients/${id}`, values, 'client');
-    showSuccessToast('Cliente actualizado exitosamente');
+    updateToast(toastId, 'Cliente actualizado exitosamente', 'success');
   } catch (error) {
-    showErrorToast(error, 'Error al actualizar el cliente');
+    updateToast(toastId, 'Error al actualizar el cliente', 'error');
     throw error;
   }
 };

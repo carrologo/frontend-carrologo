@@ -36,14 +36,12 @@ interface ModalEditTransactionProps {
 }
 
 const validationSchema = Yup.object({
-  id_buyer: Yup.number().required('El comprador es requerido'),
-  id_seller: Yup.number().required('El vendedor es requerido'),
-  id_vehicle: Yup.number().required('El vehículo es requerido'),
+  id_buyer: Yup.number().nullable(),
+  id_seller: Yup.number().nullable(),
+  id_vehicle: Yup.number().nullable(),
   amount: Yup.number()
     .required('El monto es requerido')
     .min(0, 'El monto debe ser mayor a 0'),
-  start_date: Yup.date().required('La fecha de inicio es requerida'),
-  close_date: Yup.date().nullable(),
   description: Yup.string().max(1000, 'La descripción no puede exceder 1000 caracteres'),
   id_status: Yup.number().required('El estado es requerido'),
 });
@@ -81,15 +79,15 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
       
       const transaction = transactionData as Transaction;
       setTransactionData(transaction);
+      
+      // Usar los IDs de la transacción para preseleccionar los valores
       setInitialValues({
         id_buyer: transaction.id_buyer,
         id_seller: transaction.id_seller,
         id_vehicle: transaction.id_vehicle,
         amount: transaction.amount,
-        start_date: transaction.start_date ? transaction.start_date.split('T')[0] : '',
-        close_date: transaction.close_date ? transaction.close_date.split('T')[0] : '',
         description: transaction.description || '',
-        id_status: transaction.id_status,
+        id_status: transaction.id_status || 1,
       });
 
       if (transaction.documents) {
@@ -151,7 +149,7 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Box sx={{ flex: 1 }} />
@@ -175,7 +173,7 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
             <DialogContent>
               <Box sx={{ mt: 2 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
                     {/* Comprador */}
                     <Autocomplete
                       options={clients}
@@ -190,10 +188,25 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                           label="Comprador"
                           error={touched.id_buyer && !!errors.id_buyer}
                           helperText={touched.id_buyer && errors.id_buyer}
-                          required
+                          placeholder={transactionData?.buyerInfo ? 
+                            `${transactionData.buyerInfo.name} - ${transactionData.buyerInfo.email}` : 
+                            'Buscar comprador...'
+                          }
                         />
                       )}
                       sx={{ flex: 1 }}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <Box>
+                            <Typography variant="body1">
+                              {option.name} {option.lastName} - {option.identification}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {option.email}
+                            </Typography>
+                          </Box>
+                        </li>
+                      )}
                     />
 
                     {/* Vendedor */}
@@ -210,14 +223,29 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                           label="Vendedor"
                           error={touched.id_seller && !!errors.id_seller}
                           helperText={touched.id_seller && errors.id_seller}
-                          required
+                          placeholder={transactionData?.sellerInfo ? 
+                            `${transactionData.sellerInfo.name} - ${transactionData.sellerInfo.email}` : 
+                            'Buscar vendedor...'
+                          }
                         />
                       )}
                       sx={{ flex: 1 }}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <Box>
+                            <Typography variant="body1">
+                              {option.name} {option.lastName} - {option.identification}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {option.email}
+                            </Typography>
+                          </Box>
+                        </li>
+                      )}
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
                     {/* Vehículo */}
                     <Autocomplete
                       options={vehicles}
@@ -232,10 +260,25 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                           label="Vehículo"
                           error={touched.id_vehicle && !!errors.id_vehicle}
                           helperText={touched.id_vehicle && errors.id_vehicle}
-                          required
+                          placeholder={transactionData?.vehicleInfo ? 
+                            `${transactionData.vehicleInfo.description} - ${transactionData.vehicleInfo.plate || 'Sin placa'}` : 
+                            'Buscar vehículo...'
+                          }
                         />
                       )}
                       sx={{ flex: 1 }}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <Box>
+                            <Typography variant="body1">
+                              {option.brand} {option.line}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              Placa: {option.plate || 'Sin placa'}
+                            </Typography>
+                          </Box>
+                        </li>
+                      )}
                     />
 
                     {/* Estado */}
@@ -255,10 +298,15 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                           </MenuItem>
                         ))}
                       </Select>
+                      {transactionData?.statusInfo && (
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, ml: 1 }}>
+                          Estado actual: {transactionData.statusInfo.name}
+                        </Typography>
+                      )}
                     </FormControl>
                   </Box>
 
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
                     {/* Monto */}
                     <Field name="amount">
                       {({ field }: any) => (
@@ -269,39 +317,6 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                           error={touched.amount && !!errors.amount}
                           helperText={touched.amount && errors.amount}
                           required
-                          sx={{ flex: 1 }}
-                        />
-                      )}
-                    </Field>
-
-                    {/* Fecha de inicio */}
-                    <Field name="start_date">
-                      {({ field }: any) => (
-                        <TextField
-                          {...field}
-                          label="Fecha de Inicio"
-                          type="date"
-                          InputLabelProps={{ shrink: true }}
-                          error={touched.start_date && !!errors.start_date}
-                          helperText={touched.start_date && errors.start_date}
-                          required
-                          sx={{ flex: 1 }}
-                        />
-                      )}
-                    </Field>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    {/* Fecha de cierre */}
-                    <Field name="close_date">
-                      {({ field }: any) => (
-                        <TextField
-                          {...field}
-                          label="Fecha de Cierre"
-                          type="date"
-                          InputLabelProps={{ shrink: true }}
-                          error={touched.close_date && !!errors.close_date}
-                          helperText={touched.close_date && errors.close_date}
                           sx={{ flex: 1 }}
                         />
                       )}

@@ -2,12 +2,8 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typogra
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState, useEffect } from "react";
 import { getTransactionById } from "../../../services/transactions.service";
-import { getClientById } from "../../../services/clients.service";
-import { getVehicleById } from "../../../services/vehicles.service";
 import { transactionStatusMap } from "../../../utils/transactionStatus.utils";
 import { Transaction } from "../../../interfaces/transactions.interface";
-import { Client } from "../../../interfaces/clients.interface";
-import { Vehicle } from "../../../interfaces/vehicles.interface";
 import DescriptionIcon from "@mui/icons-material/Description";
 import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
@@ -23,9 +19,6 @@ interface ModalViewTransactionProps {
 
 export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalViewTransactionProps) => {
   const [transaction, setTransaction] = useState<Transaction | null>(null);
-  const [buyer, setBuyer] = useState<Client | null>(null);
-  const [seller, setSeller] = useState<Client | null>(null);
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -41,47 +34,6 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
     try {
       const transactionData = await getTransactionById(transactionId) as Transaction;
       setTransaction(transactionData);
-
-      // Cargar datos relacionados
-      const promises = [];
-      
-      if (transactionData.id_buyer) {
-        promises.push(getClientById(transactionData.id_buyer.toString()));
-      }
-      
-      if (transactionData.id_seller) {
-        promises.push(getClientById(transactionData.id_seller.toString()));
-      }
-      
-      if (transactionData.id_vehicle) {
-        promises.push(getVehicleById(transactionData.id_vehicle.toString()));
-      }
-
-      const results = await Promise.allSettled(promises);
-      
-      let resultIndex = 0;
-      
-      if (transactionData.id_buyer) {
-        const buyerResult = results[resultIndex++];
-        if (buyerResult.status === 'fulfilled') {
-          setBuyer(buyerResult.value as Client);
-        }
-      }
-      
-      if (transactionData.id_seller) {
-        const sellerResult = results[resultIndex++];
-        if (sellerResult.status === 'fulfilled') {
-          setSeller(sellerResult.value as Client);
-        }
-      }
-      
-      if (transactionData.id_vehicle) {
-        const vehicleResult = results[resultIndex++];
-        if (vehicleResult.status === 'fulfilled') {
-          setVehicle(vehicleResult.value as Vehicle);
-        }
-      }
-      
     } catch (error) {
       console.error("Error cargando detalles de la transacción:", error);
     } finally {
@@ -120,9 +72,6 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
 
   const handleClose = () => {
     setTransaction(null);
-    setBuyer(null);
-    setSeller(null);
-    setVehicle(null);
     onClose();
   };
 
@@ -171,8 +120,8 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">Estado de la Transacción</Typography>
               <Chip
-                label={transactionStatusMap[transaction.id_status.toString() as keyof typeof transactionStatusMap] || 'Desconocido'}
-                color={getStatusColor(transaction.id_status) as any}
+                label={transactionStatusMap[(transaction.id_status?.toString() || '1') as keyof typeof transactionStatusMap] || 'Desconocido'}
+                color={getStatusColor(transaction.id_status || 1) as any}
                 variant="filled"
               />
             </Box>
@@ -205,16 +154,13 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
               <Typography variant="h6">Vehículo</Typography>
             </Box>
             
-            {vehicle ? (
+            {transaction?.vehicleInfo ? (
               <Box sx={{ pl: 4 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>{vehicle.brand} {vehicle.line}</strong>
+                  <strong>{transaction.vehicleInfo.description}</strong>
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Placa: {vehicle.plate || 'No especificada'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Año: {vehicle.model || 'No especificado'}
+                  Placa: {transaction.vehicleInfo.plate || 'No especificada'}
                 </Typography>
               </Box>
             ) : (
@@ -239,11 +185,10 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
                 <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>
                   Comprador
                 </Typography>
-                {buyer ? (
+                {transaction?.buyerInfo ? (
                   <Box>
-                    <Typography variant="body1">{buyer.name} {buyer.lastName}</Typography>
-                    <Typography variant="body2" color="text.secondary">{buyer.email}</Typography>
-                    <Typography variant="body2" color="text.secondary">{buyer.contact}</Typography>
+                    <Typography variant="body1">{transaction.buyerInfo.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{transaction.buyerInfo.email}</Typography>
                   </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary">
@@ -257,11 +202,10 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
                 <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>
                   Vendedor
                 </Typography>
-                {seller ? (
+                {transaction?.sellerInfo ? (
                   <Box>
-                    <Typography variant="body1">{seller.name} {seller.lastName}</Typography>
-                    <Typography variant="body2" color="text.secondary">{seller.email}</Typography>
-                    <Typography variant="body2" color="text.secondary">{seller.contact}</Typography>
+                    <Typography variant="body1">{transaction.sellerInfo.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{transaction.sellerInfo.email}</Typography>
                   </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary">

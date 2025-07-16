@@ -81,6 +81,7 @@ export const ModalEditVehicle = ({
   imageUrl,
 }: ModalEditVehicleProps) => {
 
+  // Parsear initialData para adaptarlo al formato esperado por el formulario
 const parsedInitialData = {
   type: initialData.type,
   brand: initialData.brand,

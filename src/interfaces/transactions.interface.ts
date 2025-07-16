@@ -9,7 +9,7 @@ export interface Transaction {
   description: string | null;
   documents: string | null;
   url_documents: string | null;
-  id_status: number;
+  id_status: number | null;
   sellerInfo?: {
     id: number;
     name: string;
@@ -37,8 +37,6 @@ export interface UpdateTransactionPost {
   id_seller: number | null;
   id_vehicle: number | null;
   amount: number | null;
-  start_date: string;
-  close_date?: string | null;
   description?: string | null;
   documents?: string;
   id_status: number;

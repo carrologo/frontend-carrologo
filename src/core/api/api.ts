@@ -64,7 +64,9 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Solo redirigir si es un 401 Y ya tenemos un token (es decir, el token expiró)
+    // No redirigir en el login cuando las credenciales son incorrectas
+    if (error.response?.status === 401 && getToken()) {
       removeToken();
       window.location.href = '/';
     }

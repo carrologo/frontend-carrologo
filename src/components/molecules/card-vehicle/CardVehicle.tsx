@@ -96,7 +96,8 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
       <Dialog open={openView} onClose={handleCloseView} maxWidth="md" fullWidth>
         <ModalViewVehicle
           onClose={handleCloseView}
-          initialValues={vehicle}
+          initialData={vehicle} // Cambiar de initialValues a initialData
+          imageUrl={vehicle.url_images}
         />
       </Dialog>
 

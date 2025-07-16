@@ -153,7 +153,8 @@ export default function VehicleTable({
         {selectedVehicle && (
           <ModalViewVehicle
             onClose={handleCloseModal}
-            initialValues={selectedVehicle} // Pasa los datos del vehículo al modal
+            initialData={selectedVehicle} // Cambiar de initialValues a initialData
+            imageUrl={selectedVehicle.url_images}
           />
         )}
       </Dialog>

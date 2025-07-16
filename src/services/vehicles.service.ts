@@ -1,8 +1,7 @@
 import { doGet, doPost, doPatch} from "../core/api/api";
 import { Image } from "../interfaces/commons.interface";
-import { VehiclesTableData } from "../interfaces/vehicles.interface";
+import { VehiclesTableData, VehicleDocument, UpdateVehicleDocument } from "../interfaces/vehicles.interface";
 import { showErrorToast, showLoadingToast, updateToast } from "../utils/toast.utils";
-import { Document } from "../components/molecules/document-manager/DocumentManager";
 
 export interface CreateVehiclePost {
   type: string;
@@ -21,7 +20,25 @@ export interface CreateVehiclePost {
   seatMaterial?: string;
   airbags: boolean;
   images: Image[];
-  documents?: Document[];
+  documents?: VehicleDocument[];
+}
+
+// Interfaz específica para actualización de vehículos
+export interface UpdateVehiclePost {
+  type?: string;
+  brand?: string;
+  line?: string;
+  plate?: string;
+  version?: string;
+  transmission?: string;
+  traction?: string;
+  fuelType?: string;
+  kms?: number;
+  model?: string;
+  displacement?: number;
+  seatMaterial?: string;
+  airbags?: boolean;
+  documents?: UpdateVehicleDocument[]; // Usa la interfaz específica para actualización
 }
 
 export const getVehicles = async (page: number = 1, limit: number = 50): Promise<VehiclesTableData> => {
@@ -55,7 +72,7 @@ export const getVehicleById = async (id: string): Promise<{ plate: string; brand
   }
 };
 
-export const updateVehicle = async (id: number, values: Partial<CreateVehiclePost>): Promise<void> => {
+export const updateVehicle = async (id: number, values: UpdateVehiclePost): Promise<void> => {
   const toastId = showLoadingToast('Actualizando vehículo...');
   try {
     await doPatch(`/vehicles/${id}`, values, 'vehicle');

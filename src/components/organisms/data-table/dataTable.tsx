@@ -10,7 +10,7 @@ import {
   Client,
   ClientsTableData,
 } from "../../../interfaces/clients.interface";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Button,
   Dialog,
@@ -46,7 +46,7 @@ export default function DataTable({
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchField, setSearchField] = useState("fullName"); // Campo de búsqueda predeterminado
+  const [searchField, setSearchField] = useState("name"); // Campo de búsqueda predeterminado
 
   const columns: GridColDef[] = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 120 },
@@ -114,14 +114,33 @@ export default function DataTable({
 
   // Opciones de búsqueda con etiquetas para el label
   const searchOptions = [
-    { value: "fullName", label: "Nombre completo" },
+    { value: "name", label: "Nombre" },
+    { value: "lastName", label: "Apellido" },
     { value: "email", label: "Correo" },
     { value: "identification", label: "Identificación" },
-    { value: "birthdate", label: "Fecha de Nacimiento" },
     { value: "contact", label: "Contacto" },
     { value: "comment", label: "Observaciones" },
-    { value: "isActive", label: "Estado" },
   ];
+
+  // Filtrar datos localmente
+  const filteredData = useMemo(() => {
+    if (!searchTerm || !dataTable.data) {
+      return dataTable.data || [];
+    }
+
+    return dataTable.data.filter((client: Client) => {
+      const fieldValue = client[searchField as keyof Client];
+      if (fieldValue === null || fieldValue === undefined) {
+        return false;
+      }
+      
+      // Convertir a string y buscar de forma insensible a mayúsculas/minúsculas
+      const stringValue = String(fieldValue).toLowerCase();
+      const searchValue = searchTerm.toLowerCase();
+      
+      return stringValue.includes(searchValue);
+    });
+  }, [dataTable.data, searchTerm, searchField]);
 
   const handleViewClient = async (client: Client) => {
     try {
@@ -245,13 +264,12 @@ export default function DataTable({
         </Box>
 
         <DataGrid
-          rows={dataTable.data || []}
+          rows={filteredData || []}
           columns={columns}
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           paginationModel={paginationModel}
           onPaginationModelChange={handlePaginationModelChange}
-          paginationMode="server"
-          rowCount={dataTable.pagination?.total || 0}
+          paginationMode="client"
           onCellDoubleClick={(params) => {
             if (params.field === "delete" || params.field === "edit") return;
             handleViewClient(params.row);

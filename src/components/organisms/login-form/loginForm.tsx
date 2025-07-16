@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../../../services/auth.service'
 import { LoginRequest } from '../../../interfaces/auth.interface'
+import { showWarningToast } from '../../../utils/toast.utils'
 import "./loginForm.css"
 
 export default function LoginForm () {
@@ -36,7 +37,7 @@ export default function LoginForm () {
 
   const handleLogin = async () => {
     if (!credentials.username || !credentials.password) {
-      alert('Por favor ingrese usuario y contraseña');
+      showWarningToast('Por favor ingrese usuario y contraseña');
       return;
     }
 
@@ -45,8 +46,8 @@ export default function LoginForm () {
       await login(credentials);
       navigate('/home');
     } catch (error) {
+      // El toast de error ya se maneja en el servicio auth.service.ts
       console.error('Login error:', error);
-      alert('Usuario o contraseña incorrectos');
     } finally {
       setLoading(false);
     }
@@ -94,6 +95,7 @@ export default function LoginForm () {
         size='large' 
         sx={{m: 2}} 
         variant="contained" 
+        type="button"
         onClick={handleLogin}
         disabled={loading}
       >

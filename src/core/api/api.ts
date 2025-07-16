@@ -96,7 +96,18 @@ export const doPost = async <T, D>(
       statusText: response.statusText,
     };
   } catch (error) {
-    const axiosError = error as { response: { data: ApiError } };
+    console.error('=== ERROR EN doPost ===');
+    console.error('URL:', resource);
+    console.error('Data enviada:', data);
+    console.error('Error completo:', error);
+    
+    const axiosError = error as { response: { data: ApiError; status: number } };
+    
+    if (axiosError.response) {
+      console.error('Status:', axiosError.response.status);
+      console.error('Data de error:', axiosError.response.data);
+    }
+    
     throw new Error(
       axiosError.response?.data?.message || 'Error performing POST request'
     );

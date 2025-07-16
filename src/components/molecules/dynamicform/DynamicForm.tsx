@@ -10,6 +10,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Autocomplete,
 } from "@mui/material";
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -120,6 +121,33 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     ))}
                   </Select>
                   {error && <FormHelperText>{helperText as string}</FormHelperText>}
+                </FormControl>
+              ) : type === "autocomplete" ? (
+                <FormControl fullWidth error={!!error}>
+                  <Autocomplete
+                    options={field.options || []}
+                    getOptionLabel={(option) => option.label}
+                    value={field.options?.find(option => option.value === formik.values[name]) || null}
+                    onChange={(_, newValue) => {
+                      formik.setFieldValue(name, newValue?.value || "");
+                    }}
+                    onBlur={formik.handleBlur}
+                    disabled={disabled}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={label}
+                        required={required}
+                        error={!!error}
+                        helperText={helperText as string}
+                      />
+                    )}
+                    filterOptions={(options, { inputValue }) => {
+                      return options.filter(option =>
+                        option.label.toLowerCase().includes(inputValue.toLowerCase())
+                      );
+                    }}
+                  />
                 </FormControl>
               ) : type === "date" ? (
                   <DatePicker

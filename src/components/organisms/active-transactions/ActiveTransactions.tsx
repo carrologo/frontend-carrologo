@@ -9,13 +9,17 @@ interface ActiveTransactionsProps {
   pagination?: { page: number; total: number };
   paginationModel: { page: number; pageSize: number };
   onPaginationChange: (page: number, pageSize: number) => void;
+  onViewTransaction?: (transactionId: string) => void;
+  onEditTransaction?: (transactionId: string) => void;
 }
 
 const ActiveTransactions: React.FC<ActiveTransactionsProps> = ({ 
   transactions = [], 
   pagination,
   paginationModel,
-  onPaginationChange 
+  onPaginationChange,
+  onViewTransaction,
+  onEditTransaction
 }) => {
   
   const handlePageChange = (page: number) => {
@@ -47,14 +51,19 @@ const ActiveTransactions: React.FC<ActiveTransactionsProps> = ({
         {transactions && transactions.length > 0 ? (
           <Box 
             display="grid" 
-            gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" 
+            gridTemplateColumns="repeat(auto-fill, minmax(320px, 1fr))" 
             gap={3}
-            sx={{ padding: 2 }}
+            sx={{ 
+              padding: 2,
+              alignItems: 'stretch'
+            }}
           >
             {transactions.map((transaction) => (
               <Box key={transaction.id_transaction}>
                 <TransactionCard
                   transaction={transaction}
+                  onViewTransaction={onViewTransaction}
+                  onEditTransaction={onEditTransaction}
                 />
               </Box>
             ))}

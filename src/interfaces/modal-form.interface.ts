@@ -4,7 +4,7 @@ import { Dayjs } from "dayjs";
 export interface FieldConfig {
   name: string;
   label: string;
-  type?: "text" | "email" | "tel" | "date" | "number" | "boolean" | "file";
+  type?: "text" | "email" | "tel" | "date" | "number" | "boolean" | "file" | "documents";
   required?: boolean;
   disabled?: boolean;
   multiline?: boolean;

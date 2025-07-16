@@ -1,7 +1,8 @@
 import { doGet, doPost, doPatch} from "../core/api/api";
 import { Image } from "../interfaces/commons.interface";
 import { VehiclesTableData } from "../interfaces/vehicles.interface";
-import { showErrorToast, showSuccessToast } from "../utils/toast.utils";
+import { showErrorToast, showLoadingToast, updateToast } from "../utils/toast.utils";
+import { Document } from "../components/molecules/document-manager/DocumentManager";
 
 export interface CreateVehiclePost {
   type: string;
@@ -11,13 +12,16 @@ export interface CreateVehiclePost {
   version: string;
   transmission: string;
   traction: string;
-  fuel_type: string;
+  fuel_type?: string;
+  fuelType?: string;
   kms: number;
   model: string;
   displacement: number;
-  seat_material: string;
+  seat_material?: string;
+  seatMaterial?: string;
   airbags: boolean;
   images: Image[];
+  documents?: Document[];
 }
 
 export const getVehicles = async (page: number = 1, limit: number = 50): Promise<VehiclesTableData> => {
@@ -31,11 +35,12 @@ export const getVehicles = async (page: number = 1, limit: number = 50): Promise
 }
 
 export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<void> => {
+  const toastId = showLoadingToast('Creando vehículo...');
   try {
     await doPost<T, typeof values>('/vehicle', values, 'vehicle');
-    showSuccessToast('Vehículo creado exitosamente');
+    updateToast(toastId, 'Vehículo creado exitosamente', 'success');
   } catch (error) {
-    showErrorToast(error, 'Error al crear el vehículo');
+    updateToast(toastId, 'Error al crear el vehículo', 'error');
     throw error;
   }
 };
@@ -51,11 +56,12 @@ export const getVehicleById = async (id: string): Promise<{ plate: string; brand
 };
 
 export const updateVehicle = async (id: number, values: Partial<CreateVehiclePost>): Promise<void> => {
+  const toastId = showLoadingToast('Actualizando vehículo...');
   try {
     await doPatch(`/vehicles/${id}`, values, 'vehicle');
-    showSuccessToast('Vehículo actualizado exitosamente');
+    updateToast(toastId, 'Vehículo actualizado exitosamente', 'success');
   } catch (error) {
-    showErrorToast(error, 'Error al actualizar el vehículo');
+    updateToast(toastId, 'Error al actualizar el vehículo', 'error');
     throw error;
   }
 };

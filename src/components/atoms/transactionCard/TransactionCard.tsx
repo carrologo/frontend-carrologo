@@ -1,8 +1,6 @@
 import "./TransactionCard.css";
 import React from "react";
 import { getTransactionStatusName, getTransactionStatusColor } from "../../../utils/transactionStatus.utils";
-import VehicleInfoDisplay from "../vehicle-info-display/VehicleInfoDisplay";
-import { ClientInfoDisplay } from "../client-info-display/ClientInfoDisplay";
 import { Transaction } from "../../../interfaces/transactions.interface";
 import { Button } from "@mui/material";
 import PaidIcon from '@mui/icons-material/Paid';
@@ -13,8 +11,10 @@ interface TransactionCardProps {
 }
 
 const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
-  const statusName = getTransactionStatusName(transaction.id_status.toString());
-  const statusColor = getTransactionStatusColor(transaction.id_status.toString());
+  const statusName = transaction.statusInfo ? transaction.statusInfo.name : getTransactionStatusName(transaction.id_status?.toString() || '1');
+  const statusColor = getTransactionStatusColor(transaction.id_status?.toString() || '1');
+
+  console.log('TransactionCard transaction:', transaction); // Debug
 
   return (
     <div className="ticket">
@@ -24,19 +24,23 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
             <PaidIcon style={{ color: statusColor , fontSize: '2rem' }} />
           </h1>
           <h1 className="h1-transactions">
-            <VehicleInfoDisplay vehicleId={transaction.id_vehicle.toString()} />
+            {transaction.vehicleInfo ? (
+              `${transaction.vehicleInfo.description} ${transaction.vehicleInfo.plate ? `(${transaction.vehicleInfo.plate})` : ''}`
+            ) : (
+              'Vehículo no asignado'
+            )}
           </h1>
           <p className="p-transactions">
-            <strong>Comprador:</strong> <ClientInfoDisplay clientId={transaction.id_buyer} />
+            <strong>Comprador:</strong> {transaction.buyerInfo ? `${transaction.buyerInfo.name} (${transaction.buyerInfo.email})` : 'No asignado'}
           </p>
           <p className="p-transactions">
-            <strong>Vendedor:</strong> <ClientInfoDisplay clientId={transaction.id_seller} />
+            <strong>Vendedor:</strong> {transaction.sellerInfo ? `${transaction.sellerInfo.name} (${transaction.sellerInfo.email})` : 'No asignado'}
           </p>
-          <p className="p-transactions"> <strong>Monto:</strong> ${transaction.amount.toLocaleString()}</p>
+          <p className="p-transactions"> <strong>Monto:</strong> ${transaction.amount ? transaction.amount.toLocaleString() : '0'}</p>
           <p className="p-transactions">
             <strong>Estado:</strong> <span style={{ color: statusColor, fontWeight: 'bold' }}>{statusName}</span>
           </p>
-          <p className="p-transactions-description"><strong>Descripción:</strong> {transaction.description}</p>
+          <p className="p-transactions-description"><strong>Descripción:</strong> {transaction.description || 'Sin descripción'}</p>
         </div>
         
         <div className="ticket__footer">
@@ -60,10 +64,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
             variant="outlined" 
             color="primary" 
             className="card-transaction-button"
-            onClick={() => window.open(transaction.documents || '', '_blank')}
-            disabled={!transaction.documents}
+            onClick={() => window.open(transaction.url_documents || transaction.documents || '', '_blank')}
+            disabled={!transaction.url_documents && !transaction.documents}
           >
-            {transaction.documents ? "Ver documentos" : "Ver documentos"}
+            Ver documentos
           </Button>
         </div>
       </div>

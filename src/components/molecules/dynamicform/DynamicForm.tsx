@@ -7,6 +7,9 @@ import {
   FormControl,
   Box,
   Button,
+  Select,
+  MenuItem,
+  InputLabel,
 } from "@mui/material";
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -14,6 +17,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import ImageUploadField from "../image-upload-field/ImageUploadField";
+import DocumentUploadField from "../document-upload-field/DocumentUploadField";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DocumentManager } from "../document-manager/DocumentManager";
 
@@ -64,7 +68,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           const error = formik.touched[name] && Boolean(formik.errors[name]);
           const helperText = formik.touched[name] ? formik.errors[name] : "";
 
-          const fullWidthColumn = field.multiline || type === "file" || type === "documents";
+          const fullWidthColumn = field.multiline || type === "file" || type === "documents" || type === "document";
 
           return (
             <Box key={name} gridColumn={fullWidthColumn ? "span 2" : "span 1"}>
@@ -98,6 +102,25 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   />
                   {error && <FormHelperText>{helperText as string}</FormHelperText>}
                 </FormControl>
+              ) : type === "select" ? (
+                <FormControl fullWidth error={!!error}>
+                  <InputLabel>{label}</InputLabel>
+                  <Select
+                    name={name}
+                    value={formik.values[name] ?? ""}
+                    onChange={(e) => formik.setFieldValue(name, e.target.value)}
+                    onBlur={formik.handleBlur}
+                    disabled={disabled}
+                    label={label}
+                  >
+                    {field.options?.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {error && <FormHelperText>{helperText as string}</FormHelperText>}
+                </FormControl>
               ) : type === "date" ? (
                   <DatePicker
                     label={label}
@@ -123,6 +146,14 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   onChange={(documents) => formik.setFieldValue(name, documents)}
                   error={error ? helperText as string : undefined}
                   onLoadingChange={onDocumentsLoadingChange}
+                />
+              ) : type === "document" ? (
+                <DocumentUploadField
+                  field={field}
+                  formikField={formik.getFieldProps(name)}
+                  setFieldValue={formik.setFieldValue}
+                  touched={formik.touched}
+                  errors={formik.errors}
                 />
               ) : type === "file" ? (
                 isEditMode && name === "images" ? (

@@ -61,7 +61,6 @@ const MultiStepModal: React.FC<MultiStepModalProps> = ({
   onSubmit,
   isSubmitting = false,
   canProceed = true,
-  initialValues,
   submitButtonText = "Crear Vehículo",
   submittingText = "Creando...",
 }) => {

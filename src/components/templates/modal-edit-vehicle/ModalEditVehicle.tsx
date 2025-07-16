@@ -75,7 +75,9 @@ export const ModalEditVehicle = ({
   imageUrl,
 }: ModalEditVehicleProps) => {
   const [documentsLoading, setDocumentsLoading] = useState(false);
+  documentsLoading
 
+  // Parsear initialData para adaptarlo al formato esperado por el formulario
 const parsedInitialData = {
   ...initialData,
   fuelType: initialData.fuel_type,

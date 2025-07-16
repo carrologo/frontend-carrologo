@@ -14,7 +14,7 @@ interface ApiError {
 }
 
 // Tipo para el parámetro apiType
-type ApiType = 'client' | 'vehicle' | 'auth' | 'notifications' | 'transactions';
+type ApiType = 'client' | 'vehicle' | 'auth' | 'notifications' | 'transactions' | 'values';
 
 // Mapeo de apiType a la variable de entorno correspondiente
 const baseUrlMap: Record<ApiType, string> = {
@@ -23,6 +23,7 @@ const baseUrlMap: Record<ApiType, string> = {
   auth: import.meta.env.VITE_AUTH_BASE_URL as string,
   notifications: import.meta.env.VITE_NOTIFICATIONS_BASE_URL as string,
   transactions: import.meta.env.VITE_TRANSACTIONS_BASE_URL as string,
+  values: import.meta.env.VITE_VALUES_BASE_URL as string,
 };
 
 // Token management

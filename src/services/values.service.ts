@@ -1,3 +1,4 @@
+import { doGet } from "../core/api/api";
 import { showErrorToast } from "../utils/toast.utils";
 
 export interface TypeDocument {
@@ -25,12 +26,8 @@ export interface ValuesResponse {
 
 export const getValues = async (): Promise<ValuesResponse> => {
   try {
-    // Como este endpoint no está en las variables de entorno, usamos la URL directa
-    const response = await fetch('https://nengsmd1sj.execute-api.us-east-1.amazonaws.com/prod/values/all');
-    if (!response.ok) {
-      throw new Error('Error al obtener los valores');
-    }
-    return await response.json();
+    const response = await doGet<ValuesResponse>('/values/all', 'values');
+    return response.data;
   } catch (error) {
     showErrorToast(error, 'Error al cargar los tipos de documentos');
     throw error;

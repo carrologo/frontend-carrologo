@@ -1,4 +1,4 @@
-import { Grid, Box } from "@mui/material";
+import { Grid, Box, CircularProgress } from "@mui/material";
 import CardVehicle from "../../molecules/card-vehicle/CardVehicle";
 import { Vehicle } from "../../../interfaces/vehicles.interface";
 import SimplePagination from "../../atoms/simple-pagination/SimplePagination";
@@ -9,13 +9,17 @@ interface ActiveVehiclesProps {
   pagination?: { page: number; total: number };
   paginationModel: { page: number; pageSize: number };
   onPaginationChange: (page: number, pageSize: number) => void;
+  onUpdateVehicles: (page?: number, limit?: number) => void;
+  loading?: boolean;
 }
 
 const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({ 
   vehicles, 
   pagination,
   paginationModel,
-  onPaginationChange 
+  onPaginationChange,
+  onUpdateVehicles,
+  loading = false
 }) => {
   
   const handlePageChange = (page: number) => {
@@ -44,7 +48,16 @@ const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({
       
       {/* Área de contenido de cards */}
       <Box className="cards-content-area">
-        {vehicles.length > 0 ? (
+        {loading ? (
+          <Box 
+            display="flex" 
+            justifyContent="center" 
+            alignItems="center" 
+            minHeight="400px"
+          >
+            <CircularProgress size={60} />
+          </Box>
+        ) : vehicles.length > 0 ? (
           <Grid
             container
             spacing={{ xs: 2, md: 3 }}
@@ -52,7 +65,10 @@ const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({
           >
             {vehicles.map((vehicle, index) => (
               <Grid size={4} key={index}>
-                <CardVehicle vehicle={vehicle} />
+                <CardVehicle 
+                  vehicle={vehicle} 
+                  onVehicleUpdated={() => onUpdateVehicles(paginationModel.page + 1, paginationModel.pageSize)}
+                />
               </Grid>
             ))}
           </Grid>

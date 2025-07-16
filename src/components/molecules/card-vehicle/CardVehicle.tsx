@@ -18,9 +18,10 @@ import './CardVehicle.css';
 
 interface CardVehicleProps {
   vehicle: Vehicle;
+  onVehicleUpdated?: () => void;
 }
 
-const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
+const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle, onVehicleUpdated }) => {
   const [openView, setOpenView] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -31,6 +32,13 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
 
   const handleOpenEdit = () => setOpenEdit(true);
   const handleCloseEdit = () => setOpenEdit(false);
+
+  const handleVehicleEdited = () => {
+    handleCloseEdit();
+    if (onVehicleUpdated) {
+      onVehicleUpdated();
+    }
+  };
 
   const handleViewImages = () => {
     if (url) {
@@ -105,18 +113,8 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
         <ModalEditVehicle
           onClose={handleCloseEdit}
           vehicleId={vehicle.id}
-          initialData={{
-            ...vehicle,
-            images: vehicle.url_images
-              ? [
-                  {
-                    base64: vehicle.url_images,
-                    name: "imagen-vehiculo.jpg",
-                  },
-                ]
-              : [],
-          }}
-          onVehicleEdited={handleCloseEdit}
+          initialData={vehicle}
+          onVehicleEdited={handleVehicleEdited}
           imageUrl={vehicle.url_images}
         />
       </Dialog>

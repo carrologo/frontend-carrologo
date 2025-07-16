@@ -6,8 +6,6 @@ import Typography from '@mui/material/Typography';
 import { Dialog, Chip } from '@mui/material';
 import { Transaction } from '../../../interfaces/transactions.interface';
 import { getTransactionStatusName, getTransactionStatusColor } from '../../../utils/transactionStatus.utils';
-import VehicleInfoDisplay from '../../atoms/vehicle-info-display/VehicleInfoDisplay';
-import ClientInfoDisplay from '../../atoms/client-info-display/ClientInfoDisplay';
 import IconButton from '@mui/material/IconButton';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -60,39 +58,51 @@ export default function TransactionsTable({
       headerName: 'Comprador', 
       flex: 1, 
       minWidth: 150,
-      renderCell: (params) => <ClientInfoDisplay clientId={params.value} />
+      renderCell: (params) => {
+        const buyerInfo = params.row.buyerInfo;
+        return buyerInfo ? `${buyerInfo.name} (${buyerInfo.email})` : 'No asignado';
+      }
     },
     { 
       field: 'id_seller', 
       headerName: 'Vendedor', 
       flex: 1, 
       minWidth: 150,
-      renderCell: (params) => <ClientInfoDisplay clientId={params.value} />
+      renderCell: (params) => {
+        const sellerInfo = params.row.sellerInfo;
+        return sellerInfo ? `${sellerInfo.name} (${sellerInfo.email})` : 'No asignado';
+      }
     },
     { 
       field: 'id_vehicle', 
       headerName: 'Vehículo', 
       flex: 1.5, 
       minWidth: 150,
-      renderCell: (params) => <VehicleInfoDisplay vehicleId={params.value.toString()} />
+      renderCell: (params) => {
+        const vehicleInfo = params.row.vehicleInfo;
+        return vehicleInfo ? `${vehicleInfo.description} ${vehicleInfo.plate ? `(${vehicleInfo.plate})` : ''}` : 'No asignado';
+      }
     },
     {
       field: 'amount',
       headerName: 'Monto',
       flex: 1,
       minWidth: 100,
-      renderCell: (params) => `$${params.value.toLocaleString()}`,
+      renderCell: (params) => `$${params.value ? params.value.toLocaleString() : '0'}`,
     },
-    { field: 'description', headerName: 'Descripción', flex: 1.5, minWidth: 150 },
+    { field: 'description', headerName: 'Descripción', flex: 1.5, minWidth: 150,
+      renderCell: (params) => params.value || 'Sin descripción'
+    },
     { 
       field: 'documents', 
       headerName: 'Documentos', 
       flex: 1, 
       minWidth: 100,
-      renderCell: (params) => (
-        params.value ? (
+      renderCell: (params) => {
+        const documentUrl = params.row.url_documents || params.row.documents;
+        return documentUrl ? (
           <a 
-            href={params.value} 
+            href={documentUrl} 
             target="_blank" 
             rel="noopener noreferrer"
             style={{ 
@@ -104,25 +114,28 @@ export default function TransactionsTable({
           </a>
         ) : (
           <span style={{ color: '#666' }}>No disponible</span>
-        )
-      )
+        );
+      }
     },
     { 
       field: 'id_status', 
       headerName: 'Estado', 
       flex: 1, 
       minWidth: 100,
-      renderCell: (params) => (
-        <Chip 
-          label={getTransactionStatusName(params.value.toString())} 
-          style={{ 
-            backgroundColor: getTransactionStatusColor(params.value.toString()), 
-            color: 'white',
-            fontWeight: 'bold'
-          }}
-          size="small"
-        />
-      )
+      renderCell: (params) => {
+        const statusInfo = params.row.statusInfo;
+        return (
+          <Chip 
+            label={statusInfo ? statusInfo.name : getTransactionStatusName(params.value?.toString() || '1')} 
+            style={{ 
+              backgroundColor: getTransactionStatusColor(params.value?.toString() || '1'), 
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+            size="small"
+          />
+        );
+      }
     },
     {
       field: "actions",
@@ -199,21 +212,21 @@ export default function TransactionsTable({
               Detalles de la Transacción
             </Typography>
             <p>
-              <strong>Comprador:</strong> <ClientInfoDisplay clientId={selectedTransaction.id_buyer} />
+              <strong>Comprador:</strong> {selectedTransaction.buyerInfo ? `${selectedTransaction.buyerInfo.name} (${selectedTransaction.buyerInfo.email})` : 'No asignado'}
             </p>
             <p>
-              <strong>Vendedor:</strong> <ClientInfoDisplay clientId={selectedTransaction.id_seller} />
+              <strong>Vendedor:</strong> {selectedTransaction.sellerInfo ? `${selectedTransaction.sellerInfo.name} (${selectedTransaction.sellerInfo.email})` : 'No asignado'}
             </p>
             <p>
-              <strong>Vehículo:</strong> <VehicleInfoDisplay vehicleId={selectedTransaction.id_vehicle.toString()} />
+              <strong>Vehículo:</strong> {selectedTransaction.vehicleInfo ? `${selectedTransaction.vehicleInfo.description} ${selectedTransaction.vehicleInfo.plate ? `(${selectedTransaction.vehicleInfo.plate})` : ''}` : 'No asignado'}
             </p>
-            <p><strong>Monto:</strong> ${selectedTransaction.amount.toLocaleString()}</p>
-            <p><strong>Descripción:</strong> {selectedTransaction.description}</p>
+            <p><strong>Monto:</strong> ${selectedTransaction.amount ? selectedTransaction.amount.toLocaleString() : '0'}</p>
+            <p><strong>Descripción:</strong> {selectedTransaction.description || 'Sin descripción'}</p>
             <p>
               <strong>Documentos:</strong> 
-              {selectedTransaction.documents ? (
+              {selectedTransaction.url_documents || selectedTransaction.documents ? (
                 <a 
-                  href={selectedTransaction.documents} 
+                  href={(selectedTransaction.url_documents || selectedTransaction.documents) || ''} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   style={{ 
@@ -231,9 +244,9 @@ export default function TransactionsTable({
             <p>
               <strong>Estado:</strong> 
               <Chip 
-                label={getTransactionStatusName(selectedTransaction.id_status.toString())} 
+                label={selectedTransaction.statusInfo ? selectedTransaction.statusInfo.name : getTransactionStatusName(selectedTransaction.id_status?.toString() || '1')} 
                 style={{ 
-                  backgroundColor: getTransactionStatusColor(selectedTransaction.id_status.toString()), 
+                  backgroundColor: getTransactionStatusColor(selectedTransaction.id_status?.toString() || '1'), 
                   color: 'white',
                   fontWeight: 'bold',
                   marginLeft: '8px'

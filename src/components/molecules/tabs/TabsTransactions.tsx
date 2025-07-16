@@ -14,9 +14,10 @@ import {
 } from "@mui/material";
 import { TabPanel } from "../../atoms/tabPanel/TabPanel";
 import { Transaction } from "../../../interfaces/transactions.interface";
-import { getTransactionStatusName, transactionStatusMap } from "../../../utils/transactionStatus.utils";
+import { transactionStatusMap } from "../../../utils/transactionStatus.utils";
 import ActiveTransactions from "../../organisms/active-transactions/ActiveTransactions";
 import TransactionsTable from "../../organisms/transactions-table/TransactionsTable";
+import { ModalCreateTransaction } from "../../templates/modal-create-transaction/ModalCreateTransaction";
 
 interface TabsTransactionsProps {
   dataTransactions: Transaction[];
@@ -30,8 +31,9 @@ const TabsTransactions = ({
   pagination,
 }: TabsTransactionsProps) => {
   const [value, setValue] = useState("1");
+  const [openCreateModal, setOpenCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchField, setSearchField] = useState("id_buyer");
+  const [searchField, setSearchField] = useState("buyerInfo");
   const [statusFilter, setStatusFilter] = useState("all");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -45,11 +47,15 @@ const TabsTransactions = ({
     onUpdateTransactions(page, pageSize);
   };
 
+  const handleCreateTransaction = () => {
+    onUpdateTransactions(paginationModel.page + 1, paginationModel.pageSize);
+  };
+
   const searchOptions = [
-    { value: "id_buyer", label: "Comprador" },
-    { value: "id_seller", label: "Vendedor" },
-    { value: "id_vehicle", label: "Vehículo" },
-    { value: "id_status", label: "Estado" },
+    { value: "buyerInfo", label: "Comprador" },
+    { value: "sellerInfo", label: "Vendedor" },
+    { value: "vehicleInfo", label: "Vehículo" },
+    { value: "statusInfo", label: "Estado" },
     { value: "amount", label: "Monto" },
     { value: "description", label: "Descripción" },
   ];
@@ -59,7 +65,7 @@ const TabsTransactions = ({
 
     // Filtrar por estado si no es "all"
     if (statusFilter !== "all") {
-      filtered = filtered.filter(transaction => transaction.id_status.toString() === statusFilter);
+      filtered = filtered.filter(transaction => transaction.id_status?.toString() === statusFilter);
     }
 
     // Filtrar por término de búsqueda
@@ -67,11 +73,22 @@ const TabsTransactions = ({
       const lowerSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter((transaction) => {
         if (searchField === "amount") {
-          return transaction.amount.toString().includes(searchTerm);
-        } else if (searchField === "id_status") {
-          // Buscar tanto por ID como por nombre del estado
-          const statusName = getTransactionStatusName(transaction.id_status.toString()).toLowerCase();
-          return transaction.id_status.toString().includes(searchTerm) || statusName.includes(lowerSearchTerm);
+          return transaction.amount?.toString().includes(searchTerm) || false;
+        } else if (searchField === "statusInfo") {
+          // Buscar en el nombre del estado
+          return transaction.statusInfo?.name?.toLowerCase().includes(lowerSearchTerm) || false;
+        } else if (searchField === "buyerInfo") {
+          // Buscar en nombre y email del comprador
+          return transaction.buyerInfo?.name?.toLowerCase().includes(lowerSearchTerm) ||
+                 transaction.buyerInfo?.email?.toLowerCase().includes(lowerSearchTerm) || false;
+        } else if (searchField === "sellerInfo") {
+          // Buscar en nombre y email del vendedor
+          return transaction.sellerInfo?.name?.toLowerCase().includes(lowerSearchTerm) ||
+                 transaction.sellerInfo?.email?.toLowerCase().includes(lowerSearchTerm) || false;
+        } else if (searchField === "vehicleInfo") {
+          // Buscar en descripción y placa del vehículo
+          return transaction.vehicleInfo?.description?.toLowerCase().includes(lowerSearchTerm) ||
+                 transaction.vehicleInfo?.plate?.toLowerCase().includes(lowerSearchTerm) || false;
         }
         return transaction[searchField as keyof Transaction]
           ?.toString()
@@ -97,7 +114,7 @@ const TabsTransactions = ({
       >
         <Button
           variant="contained"
-          onClick={() => console.log("Agregar transacción (futuro modal)")}
+          onClick={() => setOpenCreateModal(true)}
           sx={{
             minWidth: { xs: "100%", sm: "auto" },
             maxWidth: { xs: "300px" },
@@ -204,6 +221,12 @@ const TabsTransactions = ({
           onPaginationChange={handlePaginationChange}
         />
       </TabPanel>
+
+      <ModalCreateTransaction
+        open={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        onTransactionCreated={handleCreateTransaction}
+      />
     </Box>
   );
 };

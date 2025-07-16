@@ -1,55 +1,74 @@
 import "./TransactionCard.css";
 import React from "react";
 import { getTransactionStatusName, getTransactionStatusColor } from "../../../utils/transactionStatus.utils";
-import VehicleInfoDisplay from "../vehicle-info-display/VehicleInfoDisplay";
-import { ClientInfoDisplay } from "../client-info-display/ClientInfoDisplay";
 import { Transaction } from "../../../interfaces/transactions.interface";
+import { Button } from "@mui/material";
+import PaidIcon from '@mui/icons-material/Paid';
+import ModeEditIcon from "@mui/icons-material/ModeEdit";
 
 interface TransactionCardProps {
   transaction: Transaction;
 }
 
 const TransactionCard: React.FC<TransactionCardProps> = ({ transaction }) => {
-  const statusName = getTransactionStatusName(transaction.id_status.toString());
-  const statusColor = getTransactionStatusColor(transaction.id_status.toString());
+  const statusName = transaction.statusInfo ? transaction.statusInfo.name : getTransactionStatusName(transaction.id_status?.toString() || '1');
+  const statusColor = getTransactionStatusColor(transaction.id_status?.toString() || '1');
+
+  console.log('TransactionCard transaction:', transaction); // Debug
 
   return (
     <div className="ticket">
-      <div className="ticket_content">
-        <div className="ticket_header">
+      <div className="ticket__content">
+        <div className="ticket__header">
           <h1 className="h1-transactions">
-            Vehículo: <VehicleInfoDisplay vehicleId={transaction.id_vehicle.toString()} />
+            <PaidIcon style={{ color: statusColor , fontSize: '2rem' }} />
+          </h1>
+          <h1 className="h1-transactions">
+            {transaction.vehicleInfo ? (
+              `${transaction.vehicleInfo.description} ${transaction.vehicleInfo.plate ? `(${transaction.vehicleInfo.plate})` : ''}`
+            ) : (
+              'Vehículo no asignado'
+            )}
           </h1>
           <p className="p-transactions">
-            Comprador: <ClientInfoDisplay clientId={transaction.id_buyer} />
+            <strong>Comprador:</strong> {transaction.buyerInfo ? `${transaction.buyerInfo.name} (${transaction.buyerInfo.email})` : 'No asignado'}
           </p>
           <p className="p-transactions">
-            Vendedor: <ClientInfoDisplay clientId={transaction.id_seller} />
+            <strong>Vendedor:</strong> {transaction.sellerInfo ? `${transaction.sellerInfo.name} (${transaction.sellerInfo.email})` : 'No asignado'}
           </p>
-          <p className="p-transactions">Monto: ${transaction.amount.toLocaleString()}</p>
+          <p className="p-transactions"> <strong>Monto:</strong> ${transaction.amount ? transaction.amount.toLocaleString() : '0'}</p>
           <p className="p-transactions">
-            Estado: <span style={{ color: statusColor, fontWeight: 'bold' }}>{statusName}</span>
+            <strong>Estado:</strong> <span style={{ color: statusColor, fontWeight: 'bold' }}>{statusName}</span>
           </p>
-          <p className="p-transactions">
-            Documentos: 
-            {transaction.documents ? (
-              <a 
-                href={transaction.documents} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{ 
-                  color: '#1976d2', 
-                  textDecoration: 'underline',
-                  marginLeft: '4px'
-                }}
-              >
-                Ver documentos
-              </a>
-            ) : (
-              <span style={{ color: '#666', marginLeft: '4px' }}>No disponible</span>
-            )}
-          </p>
-          <p className="p-transactions-description">Descripción: {transaction.description}</p>
+          <p className="p-transactions-description"><strong>Descripción:</strong> {transaction.description || 'Sin descripción'}</p>
+        </div>
+        
+        <div className="ticket__footer">
+          <Button 
+            size="small"
+            variant="text"
+            color="primary"
+            className="card-transaction-button"
+            >
+            Ver detalles
+            </Button>
+            <Button
+            size="small"
+            startIcon={<ModeEditIcon />}
+            className="card-vehicle-button"
+          >
+            Editar
+          </Button>
+          <Button 
+            size="small"
+            variant="outlined" 
+            color="primary" 
+            className="card-transaction-button"
+            onClick={() => window.open(transaction.url_documents || transaction.documents || '', '_blank')}
+            disabled={!transaction.url_documents && !transaction.documents}
+          >
+            Ver documentos
+          </Button>
         </div>
       </div>
     </div>

@@ -3,13 +3,14 @@ import { TransactionTableData } from "../interfaces/transactions.interface";
 import { showErrorToast, showSuccessToast } from "../utils/toast.utils";
 
 export interface CreateTransactionPost {
-  id_buyer: string;
-  id_seller: string;
-  id_vehicle: string;
-  amount: number;
-  description: string;
-  documents: string;
-  id_status: string;
+  id_buyer: number | null;
+  id_seller: number | null;
+  id_vehicle: number | null;
+  amount: number | null;
+  description: string | null;
+  documents: string | null;
+  url_documents: string | null;
+  id_status: number;
 }
 
 export const getTransactions = async (page: number = 1, limit: number = 50): Promise<TransactionTableData> => {
@@ -34,9 +35,19 @@ export const getTransactionById = async (id: string) => {
 
 export const createTransaction = async <T>(values: CreateTransactionPost): Promise<void> => {
   try {
-    await doPost<T, typeof values>('/transaction', values, 'transactions');
+    console.log('Enviando datos a la API:', values);
+    console.log('Tipos de datos:', {
+      id_vehicle: typeof values.id_vehicle,
+      id_buyer: typeof values.id_buyer,
+      id_seller: typeof values.id_seller,
+      id_status: typeof values.id_status,
+      amount: typeof values.amount,
+    });
+    
+    await doPost<T, typeof values>('/transactions', values, 'transactions');
     showSuccessToast('Transacción creada exitosamente');
   } catch (error) {
+    console.error('Error detallado en createTransaction:', error);
     showErrorToast(error, 'Error al crear la transacción');
     throw error;
   }

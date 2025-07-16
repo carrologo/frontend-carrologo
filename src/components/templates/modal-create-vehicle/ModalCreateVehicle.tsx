@@ -9,7 +9,7 @@ import {
 import { Image } from "../../../interfaces/commons.interface";
 import { useFormik } from "formik";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
-import { Document } from "../../molecules/document-manager/DocumentManager";
+import { VehicleDocument } from "../../../interfaces/vehicles.interface";
 
 const fields1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
@@ -124,7 +124,7 @@ export const ModalCreateVehicle = ({
           displacement: data.displacement as number,
           seatMaterial: data.seatMaterial as string,
           airbags: data.airbags as boolean,
-          documents: data.documents as Document[] || [],
+          documents: data.documents as VehicleDocument[] || [],
           images:
             (data.images as Image[])?.map((image: Image) => ({
               ...image,

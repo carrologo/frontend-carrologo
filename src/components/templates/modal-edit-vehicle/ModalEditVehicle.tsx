@@ -1,13 +1,19 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
 import * as Yup from "yup";
-import { updateVehicle } from "../../../services/vehicles.service";
-import { CreateVehiclePost } from "../../../services/vehicles.service";
+import { updateVehicle, UpdateVehiclePost } from "../../../services/vehicles.service";
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+// Extender dayjs con el plugin UTC
+dayjs.extend(utc);
 import { useState } from "react";
 import { useFormik } from "formik";
 import MultiStepModal from "../../organisms/multi-step-modal/MultiStepModal";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
-import { Document } from "../../molecules/document-manager/DocumentManager";
+import { VehicleDocument, UpdateVehicleDocument, Vehicle } from "../../../interfaces/vehicles.interface";
+import { showLoadingToast, updateToast } from "../../../utils/toast.utils";
+import { Box, Button, Alert } from '@mui/material';
+import { Image as ImageIcon } from '@mui/icons-material';
 
 const field1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
@@ -62,7 +68,7 @@ const validationSchema = Yup.object({
 interface ModalEditVehicleProps { 
   onClose: () => void;
   vehicleId: number;
-  initialData: CreateVehiclePost;
+  initialData: Vehicle; // Usar la interfaz Vehicle que coincide con el GET
   onVehicleEdited: () => void;
   imageUrl?: string;
 }
@@ -74,18 +80,46 @@ export const ModalEditVehicle = ({
   onVehicleEdited,
   imageUrl,
 }: ModalEditVehicleProps) => {
-  const [documentsLoading, setDocumentsLoading] = useState(false);
 
 const parsedInitialData = {
-  ...initialData,
-  fuelType: initialData.fuel_type,
-  seatMaterial: initialData.seat_material,
+  type: initialData.type,
+  brand: initialData.brand,
+  line: initialData.line,
+  plate: initialData.plate,
+  version: initialData.version || '',
+  transmission: initialData.transmission || '',
+  traction: initialData.traction || '',
+  fuelType: initialData.fuel_type, // Mapear del campo que llega del backend
+  kms: initialData.kms,
   model: dayjs(initialData.model),
-  documents: initialData.documents || [], // Agregar documents vacío si no existe
+  displacement: initialData.displacement || 0,
+  seatMaterial: initialData.seat_material || '', // Mapear del campo que llega del backend
+  airbags: initialData.airbags || false,
+  documents: initialData.documents?.map(doc => {
+    const formattedDate = doc.expirationDate ? dayjs.utc(doc.expirationDate).format('YYYY-MM-DD') : '';
+    return {
+      documentTypeId: doc.documentTypeId,
+      expirationDate: formattedDate,
+      id: doc.id, // Conservar el ID para updates
+      category: doc.category, // Conservar categoría si existe
+      idVehicle: doc.idVehicle // Conservar relación con vehículo
+    };
+  }) || [], // Formatear fechas de documentos existentes
 };
 
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [showImageAlert, setShowImageAlert] = useState(false);
+
+  // Función para ver imágenes
+  const handleViewImages = () => {
+    if (imageUrl && imageUrl.trim() !== '') {
+      window.open(imageUrl, "_blank");
+    } else {
+      setShowImageAlert(true);
+      setTimeout(() => setShowImageAlert(false), 3000);
+    }
+  };
   const formik = useFormik({
     initialValues: parsedInitialData,
     validationSchema: validationSchema,
@@ -95,8 +129,23 @@ const parsedInitialData = {
   });
 
 const handleUpdate = async (data: Record<string, unknown>) => {
+  console.log("🔥 handleUpdate INICIADO con datos:", data);
+  const toastId = showLoadingToast("Actualizando vehículo...");
+  
   try {
-    const transformedData: Partial<CreateVehiclePost> = {
+    const allDocuments = data.documents as VehicleDocument[] || [];
+    
+    // Transformar TODOS los documentos válidos (existentes y nuevos)
+    const transformedDocuments = allDocuments
+      .filter(doc => doc.documentTypeId && doc.expirationDate) // Solo filtrar por campos requeridos
+      .map(doc => ({
+        ...(doc.id && { id: doc.id }), // Solo incluir ID si existe (documentos existentes)
+        documentTypeId: doc.documentTypeId,
+        expirationDate: doc.expirationDate,
+        idVehicle: vehicleId // Usar el ID del vehículo que estamos editando
+      }));
+
+    const transformedData: UpdateVehiclePost = {
       type: data.type as string,
       brand: data.brand as string,
       line: data.line as string,
@@ -110,19 +159,22 @@ const handleUpdate = async (data: Record<string, unknown>) => {
       displacement: data.displacement as number,
       seatMaterial: data.seatMaterial as string,
       airbags: data.airbags as boolean,
-      documents: data.documents as Document[] || [],
+      documents: transformedDocuments as UpdateVehicleDocument[], // El backend maneja ambos casos
       // No incluir images para que no se toquen las existentes
     };
+
     await updateVehicle(vehicleId, transformedData);
+    
+    updateToast(toastId, "¡Vehículo actualizado exitosamente!", "success");
     onVehicleEdited();
+    onClose();
   } catch (error) {
-    console.error("Error al actualizar vehículo:", error);
+    console.error("❌ Error al actualizar vehículo:", error);
+    updateToast(toastId, "Error al actualizar el vehículo", "error");
   }
 };
 
 
-
-  console.log("Parsed Initial Data:", parsedInitialData);
   
     const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -136,6 +188,20 @@ const handleUpdate = async (data: Record<string, unknown>) => {
     }
   };
 
+  const handleCustomSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    console.log("🔥 handleCustomSubmit ejecutado");
+    console.log("🔍 Evento:", e);
+    console.log("🔍 Formik isValid antes del submit:", formik.isValid);
+    console.log("🔍 Formik errors antes del submit:", formik.errors);
+    console.log("🔍 Formik values antes del submit:", formik.values);
+    
+    if (e) {
+      e.preventDefault();
+    }
+    
+    formik.handleSubmit(e);
+  };
+
   return (
     <MultiStepModal
       open={true}
@@ -146,7 +212,7 @@ const handleUpdate = async (data: Record<string, unknown>) => {
       currentStep={currentStep}
       onNext={handleNext}
       onPrevious={handlePrevious}
-      onSubmit={formik.handleSubmit}
+      onSubmit={handleCustomSubmit}
       isSubmitting={formik.isSubmitting}
       canProceed={true}
       submitButtonText="Actualizar Vehículo"
@@ -154,15 +220,40 @@ const handleUpdate = async (data: Record<string, unknown>) => {
     >
       {/* Renderiza los campos del paso actual */}
       {steps.map((step, index) => (
-    <DynamicForm 
-      key={index} 
-      fields={step.fields} 
-      formik={formik}
-      isEditMode={true}
-      imageUrl={imageUrl}
-      onDocumentsLoadingChange={setDocumentsLoading}
-    />
-  ))}
+        <Box key={index}>
+          {/* Mostrar botón de imágenes solo en el primer step */}
+          {index === 0 && currentStep === 0 && (
+            <Box>
+              {/* Alerta para imágenes no disponibles */}
+              {showImageAlert && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  No hay imágenes disponibles para este vehículo
+                </Alert>
+              )}
+              
+              {/* Botón para ver imágenes */}
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleViewImages}
+                  startIcon={<ImageIcon />}
+                  sx={{ mb: 2 }}
+                >
+                  Ver Imágenes del Vehículo
+                </Button>
+              </Box>
+            </Box>
+          )}
+          
+          <DynamicForm 
+            fields={step.fields} 
+            formik={formik}
+            isEditMode={true}
+            imageUrl={imageUrl}
+          />
+        </Box>
+      ))}
     </MultiStepModal>
   );
 };

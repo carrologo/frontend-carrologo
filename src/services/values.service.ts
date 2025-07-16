@@ -1,10 +1,6 @@
 import { doGet } from "../core/api/api";
 import { showErrorToast } from "../utils/toast.utils";
-
-export interface TypeDocument {
-  id: number;
-  name: string;
-}
+import { TypeDocument } from "../interfaces/vehicles.interface";
 
 export interface TransactionStatus {
   id_status: number;

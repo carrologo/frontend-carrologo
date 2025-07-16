@@ -23,8 +23,9 @@ interface TabsVehiclesProps {
   dataVehicles: Vehicle[];
   onUpdateVehicles: (page?: number, limit?: number) => void;
   pagination?: { page: number; total: number };
+  loading?: boolean;
 }
-const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehiclesProps) => {
+const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination, loading = false }: TabsVehiclesProps) => {
   const [value, setValue] = useState("1");
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -173,6 +174,8 @@ const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehicl
           pagination={pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
+          onUpdateVehicles={onUpdateVehicles}
+          loading={loading}
         />
       </TabPanel>
       <TabPanel value={value} index="2">
@@ -181,6 +184,8 @@ const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehicl
           pagination={pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
+          onUpdateVehicles={onUpdateVehicles}
+          loading={loading}
         />
       </TabPanel>
       <Dialog open={openCreateModal} maxWidth="md" fullWidth>

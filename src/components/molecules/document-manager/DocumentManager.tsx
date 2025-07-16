@@ -13,19 +13,11 @@ import {
   CardContent,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
-import { getValues, TypeDocument } from '../../../services/values.service';
+import { getValues } from '../../../services/values.service';
+import { VehicleDocument, DocumentManagerProps, TypeDocument } from '../../../interfaces/vehicles.interface';
 
-export interface Document {
-  documentTypeId: number;
-  expirationDate: string;
-}
-
-interface DocumentManagerProps {
-  documents: Document[];
-  onChange: (documents: Document[]) => void;
-  error?: string;
-  onLoadingChange?: (loading: boolean) => void;
-}
+// Re-exportar la interfaz para compatibilidad con código existente
+export type Document = VehicleDocument;
 
 export const DocumentManager: React.FC<DocumentManagerProps> = ({
   documents,
@@ -62,7 +54,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       return;
     }
     
-    const newDocument: Document = {
+    const newDocument: VehicleDocument = {
       documentTypeId: typeDocuments[0]?.id || 1,
       expirationDate: '',
     };
@@ -74,7 +66,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     onChange(updatedDocuments);
   };
 
-  const updateDocument = (index: number, field: keyof Document, value: string | number) => {
+  const updateDocument = (index: number, field: keyof VehicleDocument, value: string | number) => {
     const updatedDocuments = documents.map((doc, i) => 
       i === index ? { ...doc, [field]: value } : doc
     );
@@ -146,9 +138,25 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
         </Typography>
       )}
 
-      {documents.map((document, index) => (
-        <Card key={index} sx={{ mb: 2, position: 'relative' }}>
+      {documents.map((document, index) => {
+        const isExistingDocument = !!document.id;
+        
+        return (
+        <Card key={index} sx={{ mb: 2, position: 'relative', 
+          backgroundColor: isExistingDocument ? '#f8f9fa' : 'white',
+          border: isExistingDocument ? '2px solid #e3f2fd' : '1px solid #e0e0e0'
+        }}>
           <CardContent>
+            {isExistingDocument && (
+              <Typography variant="caption" color="primary" sx={{ 
+                position: 'absolute', 
+                top: 8, 
+                left: 16,
+                fontWeight: 'bold'
+              }}>
+                Documento Existente
+              </Typography>
+            )}
             <IconButton
               color="error"
               onClick={() => removeDocument(index)}
@@ -163,7 +171,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               <Delete />
             </IconButton>
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', pr: 6 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', pr: 6, mt: isExistingDocument ? 3 : 0 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Tipo de Documento</InputLabel>
                 <Select
@@ -191,7 +199,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
             </Box>
           </CardContent>
         </Card>
-      ))}
+        );
+      })}
 
       {documents.length === 0 && (
         <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', py: 2 }}>

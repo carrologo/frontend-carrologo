@@ -17,13 +17,17 @@ interface VehicleTableProps {
   pagination?: { page: number; total: number };
   paginationModel: { page: number; pageSize: number };
   onPaginationChange: (page: number, pageSize: number) => void;
+  onUpdateVehicles?: (page: number, pageSize: number) => void;
+  loading?: boolean;
 }
 
 export default function VehicleTable({ 
   vehicles, 
   pagination, 
   paginationModel, 
-  onPaginationChange 
+  onPaginationChange,
+  onUpdateVehicles,
+  loading = false
 }: Readonly<VehicleTableProps>) {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,6 +55,13 @@ export default function VehicleTable({
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedVehicle(null);
+  };
+
+  const handleVehicleEdited = () => {
+    handleCloseEditModal();
+    if (onUpdateVehicles) {
+      onUpdateVehicles(paginationModel.page + 1, paginationModel.pageSize);
+    }
   };
 
   const columns: GridColDef[] = [
@@ -137,6 +148,7 @@ export default function VehicleTable({
           onPaginationModelChange={handlePaginationModelChange}
           paginationMode="server"
           rowCount={pagination?.total || 0}
+          loading={loading}
           onCellDoubleClick={(params) => {
             if (params.field === "edit") return;
             handleViewVehicles(params.row);
@@ -153,7 +165,8 @@ export default function VehicleTable({
         {selectedVehicle && (
           <ModalViewVehicle
             onClose={handleCloseModal}
-            initialValues={selectedVehicle} // Pasa los datos del vehículo al modal
+            initialData={selectedVehicle} // Cambiar de initialValues a initialData
+            imageUrl={selectedVehicle.url_images}
           />
         )}
       </Dialog>
@@ -163,18 +176,8 @@ export default function VehicleTable({
           <ModalEditVehicle
             onClose={handleCloseEditModal}
             vehicleId={selectedVehicle.id}
-            initialData={{
-              ...selectedVehicle,
-              images: selectedVehicle.url_images
-                ? [
-                    {
-                      base64: selectedVehicle.url_images,
-                      name: "imagen-vehiculo.jpg",
-                    },
-                  ]
-                : [],
-            }}
-            onVehicleEdited={handleCloseEditModal}
+            initialData={selectedVehicle}
+            onVehicleEdited={handleVehicleEdited}
             imageUrl={selectedVehicle.url_images}
           />
         )}

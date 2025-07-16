@@ -10,7 +10,7 @@ import { ModalEditVehicle } from '../../templates/modal-edit-vehicle/ModalEditVe
 import IconButton from '@mui/material/IconButton';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 
-import './VehicleTable.css';
+import './Vehicletable.css';
 
 interface VehicleTableProps {
   vehicles: Vehicle[];

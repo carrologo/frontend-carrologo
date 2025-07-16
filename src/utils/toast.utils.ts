@@ -29,7 +29,7 @@ export const getErrorMessage = (error: unknown): string => {
 export const showErrorToast = (error: unknown, defaultMessage?: string): void => {
   const message = defaultMessage || getErrorMessage(error);
   toast.error(message, {
-    position: "top-right",
+    position: "top-center",
     autoClose: 5000,
     hideProgressBar: false,
     closeOnClick: true,
@@ -41,7 +41,7 @@ export const showErrorToast = (error: unknown, defaultMessage?: string): void =>
 // Función para mostrar éxito con toast
 export const showSuccessToast = (message: string): void => {
   toast.success(message, {
-    position: "top-right",
+    position: "top-center",
     autoClose: 3000,
     hideProgressBar: false,
     closeOnClick: true,
@@ -53,7 +53,7 @@ export const showSuccessToast = (message: string): void => {
 // Función para mostrar información con toast
 export const showInfoToast = (message: string): void => {
   toast.info(message, {
-    position: "top-right",
+    position: "top-center",
     autoClose: 4000,
     hideProgressBar: false,
     closeOnClick: true,
@@ -65,9 +65,29 @@ export const showInfoToast = (message: string): void => {
 // Función para mostrar advertencia con toast
 export const showWarningToast = (message: string): void => {
   toast.warning(message, {
-    position: "top-right",
+    position: "top-center",
     autoClose: 4000,
     hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+};
+
+// Función para mostrar toast de carga/procesando
+export const showLoadingToast = (message: string): string | number => {
+  return toast.loading(message, {
+    position: "top-center",
+  });
+};
+
+// Función para actualizar un toast existente
+export const updateToast = (toastId: string | number, message: string, type: 'success' | 'error' | 'info' | 'warning'): void => {
+  toast.update(toastId, {
+    render: message,
+    type,
+    isLoading: false,
+    autoClose: type === 'success' ? 3000 : 5000,
     closeOnClick: true,
     pauseOnHover: true,
     draggable: true,

@@ -15,6 +15,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import ImageUploadField from "../image-upload-field/ImageUploadField";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { DocumentManager } from "../document-manager/DocumentManager";
 
 interface DynamicFormProps {
   fields: FieldConfig[];
@@ -29,9 +30,16 @@ interface DynamicFormProps {
   };
   isEditMode?: boolean;
   imageUrl?: string;
+  onDocumentsLoadingChange?: (loading: boolean) => void;
 }
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ fields, formik, isEditMode = false, imageUrl }) => {
+const DynamicForm: React.FC<DynamicFormProps> = ({ 
+  fields, 
+  formik, 
+  isEditMode = false, 
+  imageUrl,
+  onDocumentsLoadingChange 
+}) => {
   const handleOpenImage = () => {
     if (imageUrl) {
       window.open(imageUrl, '_blank');
@@ -56,7 +64,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ fields, formik, isEditMode = 
           const error = formik.touched[name] && Boolean(formik.errors[name]);
           const helperText = formik.touched[name] ? formik.errors[name] : "";
 
-          const fullWidthColumn = field.multiline || type === "file";
+          const fullWidthColumn = field.multiline || type === "file" || type === "documents";
 
           return (
             <Box key={name} gridColumn={fullWidthColumn ? "span 2" : "span 1"}>
@@ -109,6 +117,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ fields, formik, isEditMode = 
                       },
                     }}
                   />
+              ) : type === "documents" ? (
+                <DocumentManager
+                  documents={formik.values[name] || []}
+                  onChange={(documents) => formik.setFieldValue(name, documents)}
+                  error={error ? helperText as string : undefined}
+                  onLoadingChange={onDocumentsLoadingChange}
+                />
               ) : type === "file" ? (
                 isEditMode && name === "images" ? (
                   <Box display="flex" alignItems="center" gap={2}>

@@ -17,8 +17,9 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
   onViewTransaction, 
   onEditTransaction 
 }) => {
-  const statusName = transaction.statusInfo ? transaction.statusInfo.name : getTransactionStatusName(transaction.id_status?.toString() || '1');
-  const statusColor = getTransactionStatusColor(transaction.id_status?.toString() || '1');
+  const statusId = transaction.statusInfo?.id_status?.toString() || transaction.id_status?.toString() || '1';
+  const statusName = getTransactionStatusName(statusId);
+  const statusColor = getTransactionStatusColor(transaction.statusInfo?.id_status?.toString() || '1');
 
   console.log('TransactionCard transaction:', transaction); // Debug
 

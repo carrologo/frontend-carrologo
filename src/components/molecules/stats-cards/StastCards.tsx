@@ -36,9 +36,9 @@ const StatsCards = () => {
 
         // Hacer llamadas con límite pequeño ya que solo necesitamos los totales
         const [clientsRes, vehiclesRes, transactionsRes] = await Promise.all([
-          getClients(1, 1), // Solo necesitamos el total, no los datos
-          getVehicles(1, 1),
-          getTransactions(1, 50), // Un poco más para calcular pendientes
+          getClients(1, 1000),
+          getVehicles(1, 1000),
+          getTransactions(1, 50), 
         ]);
 
         // Usar totales de paginación para estadísticas
@@ -49,9 +49,15 @@ const StatsCards = () => {
         // Para transacciones pendientes, usamos una muestra pequeña
         // En un caso real, sería mejor tener un endpoint específico para esto
         const transactionsData = transactionsRes?.data || [];
+        console.log("ID Status de transacciones:", transactionsData.map((t: Transaction) => t.id_status ?? t.statusInfo?.id_status));
         const pendingCount = transactionsData.filter(
-          (transaction: Transaction) => transaction.id_status === 1
+          (transaction: Transaction) => transaction.statusInfo?.id_status === 2
         ).length;
+
+        console.log("Total Clients:", totalClientsCount);
+        console.log("Total Vehicles:", totalVehiclesCount);
+        console.log("Total Transactions:", totalTransactionsCount);
+        console.log("Pending Transactions:", pendingCount);
 
         setTotalClients(totalClientsCount);
         setTotalVehicles(totalVehiclesCount);
@@ -94,7 +100,7 @@ const StatsCards = () => {
       value: totalTransactions,
       icon: Receipt,
       bgColor: "#3acc3e98",
-      route: "/transactions",
+      route: "/transacciones",
       clickable: true,
     },
     {
@@ -102,7 +108,7 @@ const StatsCards = () => {
       value: pendingTransactions,
       icon: Schedule,
       bgColor: "#ffb950ff",
-      route: "/transactions",
+      route: "/transacciones",
       clickable: true,
     },
   ];

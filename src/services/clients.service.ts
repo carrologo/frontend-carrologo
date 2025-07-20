@@ -23,9 +23,18 @@ export const createClient = async <T>( values: CreateClientPost ): Promise<void>
   }
 };
 
-export const getClients = async (page: number = 1, limit: number = 10): Promise<ClientsTableData> => {
+export const getClients = async (
+  page: number = 1,
+  limit: number = 10,
+  findBy?: string,
+  value?: string
+): Promise<ClientsTableData> => {
   try {
-    const response = await doGet<ClientsTableData>(`/clients?page=${page}&limit=${limit}`, 'client');
+    let url = `/clients?page=${page}&limit=${limit}`;
+    if (findBy && value) {
+      url += `&findBy=${encodeURIComponent(findBy)}&value=${encodeURIComponent(value)}`;
+    }
+    const response = await doGet<ClientsTableData>(url, 'client');
     return response.data;
   } catch (error) {
     showErrorToast(error, 'Error al cargar los clientes');

@@ -10,7 +10,7 @@ import {
   Client,
   ClientsTableData,
 } from "../../../interfaces/clients.interface";
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Dialog,
@@ -32,6 +32,10 @@ interface DataTableProps {
   onClientsUpdated: () => void;
   paginationModel: { page: number; pageSize: number };
   onPaginationModelChange: (model: { page: number; pageSize: number }) => void;
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  searchField: string;
+  setSearchField: (value: string) => void;
 }
 
 export default function DataTable({
@@ -39,14 +43,33 @@ export default function DataTable({
   onClientsUpdated,
   paginationModel,
   onPaginationModelChange,
+  searchTerm,
+  setSearchTerm,
+  searchField,
+  setSearchField,
 }: Readonly<DataTableProps>) {
+  // Estado local para el valor del input de búsqueda (para el debounce)
+  const [inputValue, setInputValue] = useState(searchTerm);
+
+  // Sincronizar inputValue con searchTerm externo (por si se limpia desde el padre)
+  useEffect(() => {
+    setInputValue(searchTerm);
+  }, [searchTerm]);
+
+  // Debounce: esperar 2 segundos después de dejar de escribir para actualizar el searchTerm real
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (inputValue !== searchTerm) {
+        setSearchTerm(inputValue);
+      }
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [inputValue, searchTerm, setSearchTerm]);
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client>({} as Client);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchField, setSearchField] = useState("name"); // Campo de búsqueda predeterminado
 
   const columns: GridColDef[] = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 120 },
@@ -122,25 +145,7 @@ export default function DataTable({
     { value: "comment", label: "Observaciones" },
   ];
 
-  // Filtrar datos localmente
-  const filteredData = useMemo(() => {
-    if (!searchTerm || !dataTable.data) {
-      return dataTable.data || [];
-    }
-
-    return dataTable.data.filter((client: Client) => {
-      const fieldValue = client[searchField as keyof Client];
-      if (fieldValue === null || fieldValue === undefined) {
-        return false;
-      }
-      
-      // Convertir a string y buscar de forma insensible a mayúsculas/minúsculas
-      const stringValue = String(fieldValue).toLowerCase();
-      const searchValue = searchTerm.toLowerCase();
-      
-      return stringValue.includes(searchValue);
-    });
-  }, [dataTable.data, searchTerm, searchField]);
+  // Ya no se filtra localmente, la data viene filtrada del backend
 
   const handleViewClient = async (client: Client) => {
     try {
@@ -253,8 +258,8 @@ export default function DataTable({
                 ?.label.toLowerCase()}`}
               variant="outlined"
               size="small"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               sx={{
                 width: { xs: "100%", sm: "200px" },
                 maxWidth: { xs: "200px" },
@@ -264,12 +269,14 @@ export default function DataTable({
         </Box>
 
         <DataGrid
-          rows={filteredData || []}
+          rows={dataTable.data || []}
           columns={columns}
           localeText={esES.components.MuiDataGrid.defaultProps.localeText}
           paginationModel={paginationModel}
           onPaginationModelChange={handlePaginationModelChange}
-          paginationMode="client"
+          paginationMode="server"
+          rowCount={dataTable.pagination?.total || 0}
+          getRowId={(row) => row.id}
           onCellDoubleClick={(params) => {
             if (params.field === "delete" || params.field === "edit") return;
             handleViewClient(params.row);

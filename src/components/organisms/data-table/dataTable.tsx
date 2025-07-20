@@ -193,6 +193,7 @@ export default function DataTable({
         <Typography
           variant="h1"
           component="div"
+          fontWeight={700}
           fontSize={30}
           sx={{ mt: 2, mb: 2, flexShrink: 0 }}
           align="center"

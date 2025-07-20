@@ -7,6 +7,9 @@ import {
   CreateVehiclePost,
 } from "../../../services/vehicles.service";
 import { Image } from "../../../interfaces/commons.interface";
+// Imagen por defecto en base64 (miniatura PNG 1x1 transparente, reemplaza por tu base64 real si lo deseas)
+const DEFAULT_IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AAn8B9pQn2wAAAABJRU5ErkJggg==";
+const DEFAULT_IMAGE_NAME = "image-not-found.png";
 import { useFormik } from "formik";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
 import { VehicleDocument } from "../../../interfaces/vehicles.interface";
@@ -39,13 +42,23 @@ const fields1: FieldConfig[] = [
   { name: "images", label: "Subir Imagenes", type: "file", multiple: true },
 ];
 
+// Este array debe ser llenado dinámicamente con las opciones de typeDebts desde values
+const typeDebtsOptions = [
+  { value: 1, label: "Multas" },
+  { value: 2, label: "Impuestos" },
+];
+
 const fields2: FieldConfig[] = [
   { name: "documents", label: "Documentos del Vehículo", type: "documents", required: true },
+];
+const fields3: FieldConfig[] = [
+  { name: "debts", label: "Deudas del Vehículo", type: "debts", required: false, options: typeDebtsOptions },
 ];
 
 const steps = [
   { title: "Información Básica", fields: fields1 },
   { title: "Documentación", fields: fields2 },
+  { title: "Deudas", fields: fields3 },
 ];
 
 const validationSchema = Yup.object({
@@ -74,6 +87,13 @@ const validationSchema = Yup.object({
     )
     .min(1, "Debe agregar al menos un documento")
     .required("Los documentos son obligatorios"),
+  debts: Yup.array()
+    .of(
+      Yup.object({
+        amount: Yup.number().typeError("El valor debe ser un número").min(0, "El valor debe ser mayor o igual a 0").required("El valor es obligatorio"),
+        typeDebtId: Yup.number().required("El tipo de deuda es obligatorio"),
+      })
+    ),
 });
 
 const initialValues = {
@@ -92,6 +112,7 @@ const initialValues = {
   airbags: false,
   images: [],
   documents: [],
+  debts: [],
 };
 
 interface ModalCreateVehicleProps {
@@ -110,6 +131,16 @@ export const ModalCreateVehicle = ({
     validationSchema,
     onSubmit: async (data: Record<string, unknown>) => {
       try {
+        let images = (data.images as Image[])?.map((image: Image) => ({
+          ...image,
+          base64: image.base64?.replace(/^data:image\/[a-z]+;base64,/, ""),
+        })) || [];
+        if (!images || images.length === 0) {
+          images = [{
+            name: DEFAULT_IMAGE_NAME,
+            base64: DEFAULT_IMAGE_BASE64,
+          }];
+        }
         const transformedData: CreateVehiclePost = {
           type: data.type as string,
           brand: data.brand as string,
@@ -125,13 +156,21 @@ export const ModalCreateVehicle = ({
           seatMaterial: data.seatMaterial as string,
           airbags: data.airbags as boolean,
           documents: data.documents as VehicleDocument[] || [],
-          images:
-            (data.images as Image[])?.map((image: Image) => ({
-              ...image,
-              base64: image.base64?.replace(/^data:image\/[a-z]+;base64,/, ""),
-            })) || [],
+          images,
+          debts: (data.debts as any[])?.map((debt) => ({
+            amount: Number(debt.amount),
+            typeDebtId: Number(debt.typeDebtId),
+          })) || [],
         };
-        await createVehicle(transformedData);
+        // Transformar debts a TypeDebtId para el backend
+        const backendData = {
+          ...transformedData,
+          debts: (transformedData.debts || []).map(({ amount, typeDebtId }) => ({
+            amount,
+            TypeDebtId: typeDebtId,
+          })),
+        };
+        await createVehicle(backendData as any);
         onVehicleCreated();
         onClose();
       } catch (err) {

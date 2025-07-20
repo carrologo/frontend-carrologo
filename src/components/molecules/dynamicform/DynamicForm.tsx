@@ -21,6 +21,7 @@ import ImageUploadField from "../image-upload-field/ImageUploadField";
 import DocumentUploadField from "../document-upload-field/DocumentUploadField";
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DocumentManager } from "../document-manager/DocumentManager";
+import { DebtManager } from "../debt-manager/DebtManager";
 
 interface DynamicFormProps {
   fields: FieldConfig[];
@@ -69,7 +70,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           const error = formik.touched[name] && Boolean(formik.errors[name]);
           const helperText = formik.touched[name] ? formik.errors[name] : "";
 
-          const fullWidthColumn = field.multiline || type === "file" || type === "documents" || type === "document";
+          const fullWidthColumn = field.multiline || type === "file" || type === "documents" || type === "document" || type === "debts";
 
           return (
             <Box key={name} gridColumn={fullWidthColumn ? "span 2" : "span 1"}>
@@ -174,6 +175,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   onChange={(documents) => formik.setFieldValue(name, documents)}
                   error={error ? helperText as string : undefined}
                   onLoadingChange={onDocumentsLoadingChange}
+                />
+              ) : type === "debts" ? (
+                <DebtManager
+                  debts={formik.values[name] || []}
+                  onChange={(debts) => formik.setFieldValue(name, debts)}
+                  error={error ? helperText as string : undefined}
+                  typeDebtsOptions={(field.options as { value: number; label: string }[]) || []}
                 />
               ) : type === "document" ? (
                 <DocumentUploadField

@@ -21,6 +21,7 @@ export interface CreateVehiclePost {
   airbags: boolean;
   images: Image[];
   documents?: VehicleDocument[];
+  debts?: { amount: number; typeDebtId: number }[];
 }
 
 // Interfaz específica para actualización de vehículos

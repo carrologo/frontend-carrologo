@@ -58,9 +58,13 @@ const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({
             <CircularProgress size={60} />
           </Box>
         ) : vehicles.length > 0 ? (
-          <Grid container spacing={3}>
-            {vehicles.map((vehicle) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} xl={2} key={vehicle.id}>
+          <Grid
+            container
+            spacing={{ xs: 2, md: 3 }}
+            columns={{ xs: 4, sm: 8, md: 20 }}
+          >
+            {vehicles.map((vehicle, index) => (
+              <Grid key={index}>
                 <CardVehicle 
                   vehicle={vehicle} 
                   onVehicleUpdated={() => onUpdateVehicles(paginationModel.page + 1, paginationModel.pageSize)}

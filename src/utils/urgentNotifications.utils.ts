@@ -41,7 +41,7 @@ export const getUrgentDocuments = (documents: ExpiringDocument[]): ExpiringDocum
   oneWeekFromNow.setDate(today.getDate() + 7);
 
   return documents.filter(document => {
-    const expirationDate = new Date(document.expirationDate);
+    const expirationDate = new Date(document.expiration_date);
     // Incluir documentos ya vencidos y los que vencen en los próximos 7 días
     return expirationDate <= oneWeekFromNow;
   });

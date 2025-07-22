@@ -55,8 +55,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     }
     
     const newDocument: VehicleDocument = {
-      documentTypeId: typeDocuments[0]?.id || 1,
-      expirationDate: '',
+      document_type_id: typeDocuments[0]?.id || 1,
+      expiration_date: '',
     };
     onChange([...documents, newDocument]);
   };
@@ -175,9 +175,9 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               <FormControl fullWidth size="small">
                 <InputLabel>Tipo de Documento</InputLabel>
                 <Select
-                  value={document.documentTypeId}
+                  value={document.document_type_id}
                   label="Tipo de Documento"
-                  onChange={(e) => updateDocument(index, 'documentTypeId', e.target.value)}
+                  onChange={(e) => updateDocument(index, 'document_type_id', e.target.value)}
                 >
                   {typeDocuments.map((type) => (
                     <MenuItem key={type.id} value={type.id}>
@@ -190,8 +190,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
               <TextField
                 label="Fecha de Vencimiento"
                 type="date"
-                value={document.expirationDate}
-                onChange={(e) => updateDocument(index, 'expirationDate', e.target.value)}
+                value={document.expiration_date}
+                onChange={(e) => updateDocument(index, 'expiration_date', e.target.value)}
                 InputLabelProps={{ shrink: true }}
                 fullWidth
                 size="small"

@@ -10,9 +10,9 @@ export interface UpcomingBirthday {
 export interface ExpiringDocument {
   id: number;
   category: string | null;
-  expirationDate: string;
+  expiration_date: string;
   documentType: string;
-  documentTypeId: number;
+  document_type_id: number;
   vehicle?: {
     id: number;
     plate: string | null;

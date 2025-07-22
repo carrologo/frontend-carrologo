@@ -7,8 +7,8 @@ export interface TypeDocument {
 
 export interface VehicleDocument {
   id?: number; // Para documentos existentes
-  documentTypeId: number;
-  expirationDate: string;
+  document_type_id: number;
+  expiration_date: string;
   category?: string; // Categoría del documento
   idVehicle?: number; // ID del vehículo relacionado
 }
@@ -16,8 +16,8 @@ export interface VehicleDocument {
 // Interfaz específica para la actualización de documentos
 export interface UpdateVehicleDocument {
   id: number; // REQUERIDO para actualización - ID del documento existente
-  documentTypeId: number;
-  expirationDate: string;
+  document_type_id: number;
+  expiration_date: string;
   idVehicle: number; // REQUERIDO para actualización - ID del vehículo
 }
 

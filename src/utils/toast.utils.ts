@@ -10,6 +10,8 @@ export interface ServiceError {
 // Función para extraer mensaje de error útil
 export const getErrorMessage = (error: unknown): string => {
   if (error && typeof error === 'object' && 'response' in error) {
+    console.log('Error response:', error);
+    
     const axiosError = error as { response?: { data?: { message?: string } } };
     if (axiosError.response?.data?.message) {
       return axiosError.response.data.message;
@@ -27,7 +29,15 @@ export const getErrorMessage = (error: unknown): string => {
 
 // Función para mostrar errores con toast
 export const showErrorToast = (error: unknown, defaultMessage?: string): void => {
-  const message = defaultMessage || getErrorMessage(error);
+  const errorMsg = getErrorMessage(error);
+  let message = '';
+  if (defaultMessage && errorMsg && errorMsg !== 'Ha ocurrido un error inesperado') {
+    message = `${defaultMessage} (${errorMsg})`;
+  } else if (defaultMessage) {
+    message = defaultMessage;
+  } else {
+    message = errorMsg;
+  }
   toast.error(message, {
     position: "top-center",
     autoClose: 5000,

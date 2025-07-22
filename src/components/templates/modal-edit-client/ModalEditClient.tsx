@@ -62,8 +62,16 @@ export const ModalEditClient = ({ clientData, onClose, onEditClient }: ModalEdit
   };
 
     const handleEditClient = async (data: CreateClientPost) => {
+      // Sanitizar campos (quitar espacios)
+      const sanitizedData: CreateClientPost = {
+        ...data,
+        identification: data.identification?.replace(/\s+/g, ""),
+        email: data.email?.replace(/\s+/g, ""),
+        contact: data.contact?.replace(/\s+/g, ""),
+        birthdate: typeof data.birthdate === "string" ? data.birthdate.replace(/\s+/g, "") : data.birthdate,
+      };
       try {
-        await updateClient(clientData.id, data);
+        await updateClient(clientData.id, sanitizedData);
         onEditClient();
       } catch (error) {
         console.error("Error al crear cliente:", error);

@@ -141,25 +141,26 @@ export const ModalCreateVehicle = ({
             base64: DEFAULT_IMAGE_BASE64,
           }];
         }
+        // Sanitizar campos (quitar espacios)
         const transformedData: CreateVehiclePost = {
-          type: data.type as string,
-          brand: data.brand as string,
-          line: data.line as string,
-          plate: String(data.plate).toUpperCase(),
-          version: data.version as string,
-          transmission: data.transmission as string,
-          traction: data.traction as string,
-          fuelType: data.fuelType as string,
+          type: data.type as string, // NO sanitizar
+          brand: data.brand as string, // NO sanitizar
+          line: data.line as string, // NO sanitizar
+          plate: String(data.plate).replace(/\s+/g, "").toUpperCase(),
+          version: (data.version as string)?.replace(/\s+/g, ""),
+          transmission: (data.transmission as string)?.replace(/\s+/g, ""),
+          traction: (data.traction as string)?.replace(/\s+/g, ""),
+          fuelType: (data.fuelType as string)?.replace(/\s+/g, ""),
           kms: data.kms as number,
-          model: new Date(data.model as string).toISOString(),
-          displacement: data.displacement as number,
-          seatMaterial: data.seatMaterial as string,
+          model: new Date(data.model as string).toISOString(), // NO sanitizar
+          displacement: Number(String(data.displacement).replace(/\s+/g, "")),
+          seatMaterial: data.seatMaterial as string, // NO sanitizar
           airbags: data.airbags as boolean,
           documents: data.documents as VehicleDocument[] || [],
           images,
           debts: (data.debts as any[])?.map((debt) => ({
-            amount: Number(debt.amount),
-            typeDebtId: Number(debt.typeDebtId),
+            amount: Number(String(debt.amount).replace(/\s+/g, "")),
+            typeDebtId: Number(String(debt.typeDebtId).replace(/\s+/g, "")),
           })) || [],
         };
         // Transformar debts a TypeDebtId para el backend

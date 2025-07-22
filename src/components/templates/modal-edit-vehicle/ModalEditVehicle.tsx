@@ -146,19 +146,20 @@ const handleUpdate = async (data: Record<string, unknown>) => {
         idVehicle: vehicleId // Usar el ID del vehículo que estamos editando
       }));
 
+    // Sanitizar campos (quitar espacios)
     const transformedData: UpdateVehiclePost = {
-      type: data.type as string,
-      brand: data.brand as string,
-      line: data.line as string,
-      plate: String(data.plate).toUpperCase(),
-      version: data.version as string,
-      transmission: data.transmission as string,
-      traction: data.traction as string,
-      fuelType: data.fuelType as string,
-      kms: data.kms as number,
-      model: dayjs(data.model as string).toISOString(),
-      displacement: data.displacement as number,
-      seatMaterial: data.seatMaterial as string,
+      type: data.type as string, // NO sanitizar
+      brand: data.brand as string, // NO sanitizar
+      line: data.line as string, // NO sanitizar
+      plate: String(data.plate).replace(/\s+/g, "").toUpperCase(),
+      version: (data.version as string)?.replace(/\s+/g, ""),
+      transmission: (data.transmission as string)?.replace(/\s+/g, ""),
+      traction: (data.traction as string)?.replace(/\s+/g, ""),
+      fuelType: (data.fuelType as string)?.replace(/\s+/g, ""),
+      kms: Number(String(data.kms).replace(/\s+/g, "")),
+      model: dayjs(data.model as string).toISOString(), // NO sanitizar
+      displacement: Number(String(data.displacement).replace(/\s+/g, "")),
+      seatMaterial: data.seatMaterial as string, // NO sanitizar
       airbags: data.airbags as boolean,
       documents: transformedDocuments as UpdateVehicleDocument[], // El backend maneja ambos casos
       // No incluir images para que no se toquen las existentes

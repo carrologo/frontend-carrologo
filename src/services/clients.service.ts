@@ -1,6 +1,6 @@
 import { doGet, doPost, doPatch } from "../core/api/api";
 import { Client, ClientsTableData } from "../interfaces/clients.interface";
-import { showErrorToast, showLoadingToast, updateToast } from "../utils/toast.utils";
+import { showErrorToast, showLoadingToast, updateToast, getErrorMessage } from "../utils/toast.utils";
 
 export interface CreateClientPost {
   name: string;
@@ -18,7 +18,7 @@ export const createClient = async <T>( values: CreateClientPost ): Promise<void>
     await doPost<T, typeof values>('/clients', values, 'client');
     updateToast(toastId, 'Cliente creado exitosamente', 'success');
   } catch (error) {
-    updateToast(toastId, 'Error al crear el cliente', 'error');
+    updateToast(toastId, getErrorMessage(error), 'error');
     throw error;
   }
 };
@@ -61,7 +61,7 @@ export const updateClient = async <T>(
     await doPatch<T, typeof values>(`/clients/${id}`, values, 'client');
     updateToast(toastId, 'Cliente actualizado exitosamente', 'success');
   } catch (error) {
-    updateToast(toastId, 'Error al actualizar el cliente', 'error');
+    updateToast(toastId, getErrorMessage(error), 'error');
     throw error;
   }
 };

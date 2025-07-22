@@ -1,7 +1,7 @@
 import { doGet, doPost, doPatch} from "../core/api/api";
 import { Image } from "../interfaces/commons.interface";
 import { VehiclesTableData, VehicleDocument, UpdateVehicleDocument } from "../interfaces/vehicles.interface";
-import { showErrorToast, showLoadingToast, updateToast } from "../utils/toast.utils";
+import { showErrorToast, showLoadingToast, updateToast, getErrorMessage } from "../utils/toast.utils";
 
 export interface CreateVehiclePost {
   type: string;
@@ -58,7 +58,7 @@ export const createVehicle = async <T>( values: CreateVehiclePost ): Promise<voi
     await doPost<T, typeof values>('/vehicle', values, 'vehicle');
     updateToast(toastId, 'Vehículo creado exitosamente', 'success');
   } catch (error) {
-    updateToast(toastId, 'Error al crear el vehículo', 'error');
+    updateToast(toastId, getErrorMessage(error), 'error');
     throw error;
   }
 };
@@ -79,7 +79,7 @@ export const updateVehicle = async (id: number, values: UpdateVehiclePost): Prom
     await doPatch(`/vehicles/${id}`, values, 'vehicle');
     updateToast(toastId, 'Vehículo actualizado exitosamente', 'success');
   } catch (error) {
-    updateToast(toastId, 'Error al actualizar el vehículo', 'error');
+    updateToast(toastId, getErrorMessage(error), 'error');
     throw error;
   }
 };

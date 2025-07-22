@@ -18,7 +18,7 @@ export const login = async (credentials: LoginRequest): Promise<LoginResponse> =
     
     return response.data;
   } catch (error) {
-    showErrorToast(error, 'Error al iniciar sesión. Verifica tus credenciales.');
+    showErrorToast(error, 'Error al iniciar sesión');
     throw error;
   }
 };

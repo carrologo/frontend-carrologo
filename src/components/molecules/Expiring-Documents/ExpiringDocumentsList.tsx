@@ -14,6 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Description, CalendarToday } from "@mui/icons-material";
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { ExpiringDocument } from "../../../interfaces/notifications.interface";
 
 interface ExpiringDocumentsListProps {
@@ -117,8 +118,22 @@ const ExpiringDocumentsList = ({ expiringDocuments, loading }: ExpiringDocuments
                         🆔 {documento.buyer?.identification || "N/A"}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        📞 {documento.buyer?.contact || "Contacto no disponible"}
+                        📞{' '}
+                        {documento.buyer?.contact ? documento.buyer.contact : 'Contacto no disponible'}
                       </Typography>
+                      {documento.buyer?.contact && (
+                        <Box sx={{ mt: 0.5, mb: 0.5 }}>
+                          <a
+                            href={`https://api.whatsapp.com/send?phone=${documento.buyer.contact}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#25D366', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.98em' }}
+                          >
+                            <WhatsAppIcon sx={{ fontSize: 20, verticalAlign: 'middle' }} />
+                            Escribir al WhatsApp
+                          </a>
+                        </Box>
+                      )}
                     </Box>
                   }
                 />

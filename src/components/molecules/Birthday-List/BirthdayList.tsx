@@ -1,4 +1,5 @@
 import  { useEffect, useState } from "react";
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import {
   Card,
   CardHeader,
@@ -121,6 +122,17 @@ const BirthdateList = ({ upcomingBirthdays, loading }: BirthdateListProps) => {
                       <Typography variant="body2" color="text.secondary">
                         📞 {cliente.contact}
                       </Typography>
+                      <Box sx={{ mt: 0.5, mb: 0.5 }}>
+                        <a
+                          href={`https://api.whatsapp.com/send?phone=${cliente.contact}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#25D366', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.98em' }}
+                        >
+                          <WhatsAppIcon sx={{ fontSize: 20, verticalAlign: 'middle' }} />
+                          Escribir al WhatsApp
+                        </a>
+                      </Box>
                       <Typography variant="body2" color="text.secondary">
                         🆔 {cliente.identification}
                       </Typography>

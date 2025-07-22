@@ -62,9 +62,9 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
   }, []);
 
   // Función para obtener el nombre del tipo de documento
-  const getDocumentTypeName = (documentTypeId: number): string => {
-    const docType = typeDocuments.find(type => type.id === documentTypeId);
-    return docType ? docType.name : `Documento tipo ${documentTypeId}`;
+  const getDocumentTypeName = (document_type_id: number): string => {
+    const docType = typeDocuments.find(type => type.id === document_type_id);
+    return docType ? docType.name : `Documento tipo ${document_type_id}`;
   };
 
   // Función para ver imágenes
@@ -135,7 +135,7 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
         </Typography>
         
         {initialData.documents.map((document, index) => {
-          const expirationDate = dayjs.utc(document.expirationDate);
+          const expirationDate = dayjs.utc(document.expiration_date);
           const today = dayjs();
           const daysUntilExpiration = expirationDate.diff(today, 'days');
           const isExpired = daysUntilExpiration < 0;
@@ -179,7 +179,7 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
                       Tipo de Documento
                     </Typography>
                     <Typography variant="body1">
-                      {getDocumentTypeName(document.documentTypeId)}
+                      {getDocumentTypeName(document.document_type_id)}
                     </Typography>
                   </Box>
                   

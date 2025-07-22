@@ -57,8 +57,8 @@ const validationSchema = Yup.object({
   documents: Yup.array()
     .of(
       Yup.object({
-        documentTypeId: Yup.number().required("El tipo de documento es obligatorio"),
-        expirationDate: Yup.string().required("La fecha de vencimiento es obligatoria"),
+        document_type_id: Yup.number().required("El tipo de documento es obligatorio"),
+        expiration_date: Yup.string().required("La fecha de vencimiento es obligatoria"),
       })
     )
     .min(1, "Debe agregar al menos un documento")
@@ -97,10 +97,10 @@ const parsedInitialData = {
   seatMaterial: initialData.seat_material || '', // Mapear del campo que llega del backend
   airbags: initialData.airbags || false,
   documents: initialData.documents?.map(doc => {
-    const formattedDate = doc.expirationDate ? dayjs.utc(doc.expirationDate).format('YYYY-MM-DD') : '';
+    const formattedDate = doc.expiration_date ? dayjs.utc(doc.expiration_date).format('YYYY-MM-DD') : '';
     return {
-      documentTypeId: doc.documentTypeId,
-      expirationDate: formattedDate,
+      document_type_id: doc.document_type_id,
+      expiration_date: formattedDate,
       id: doc.id, // Conservar el ID para updates
       category: doc.category, // Conservar categoría si existe
       idVehicle: doc.idVehicle // Conservar relación con vehículo
@@ -138,11 +138,11 @@ const handleUpdate = async (data: Record<string, unknown>) => {
     
     // Transformar TODOS los documentos válidos (existentes y nuevos)
     const transformedDocuments = allDocuments
-      .filter(doc => doc.documentTypeId && doc.expirationDate) // Solo filtrar por campos requeridos
+      .filter(doc => doc.document_type_id && doc.expiration_date) // Solo filtrar por campos requeridos
       .map(doc => ({
         ...(doc.id && { id: doc.id }), // Solo incluir ID si existe (documentos existentes)
-        documentTypeId: doc.documentTypeId,
-        expirationDate: doc.expirationDate,
+        document_type_id: doc.document_type_id,
+        expiration_date: doc.expiration_date,
         idVehicle: vehicleId // Usar el ID del vehículo que estamos editando
       }));
 

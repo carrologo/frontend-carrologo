@@ -81,8 +81,8 @@ const validationSchema = Yup.object({
   documents: Yup.array()
     .of(
       Yup.object({
-        documentTypeId: Yup.number().required("El tipo de documento es obligatorio"),
-        expirationDate: Yup.string().required("La fecha de vencimiento es obligatoria"),
+        document_type_id: Yup.number().required("El tipo de documento es obligatorio"),
+        expiration_date: Yup.string().required("La fecha de vencimiento es obligatoria"),
       })
     )
     .min(1, "Debe agregar al menos un documento")

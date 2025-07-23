@@ -3,12 +3,15 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { Dialog, Chip } from '@mui/material';
+import { Dialog, Chip, Button, Box, Menu, MenuItem } from '@mui/material';
 import { Transaction } from '../../../interfaces/transactions.interface';
 import { getTransactionStatusName, getTransactionStatusColor } from '../../../utils/transactionStatus.utils';
 import IconButton from '@mui/material/IconButton';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import GetAppIcon from '@mui/icons-material/GetApp';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import TableViewIcon from '@mui/icons-material/TableView';
 import './TransactionsTable.css';
 
 interface TransactionsTableProps {
@@ -31,6 +34,8 @@ export default function TransactionsTable({
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const exportMenuOpen = Boolean(anchorEl);
 
   const handlePaginationModelChange = (newModel: { page: number; pageSize: number }) => {
     onPaginationChange(newModel.page + 1, newModel.pageSize);
@@ -64,6 +69,113 @@ export default function TransactionsTable({
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedTransaction(null);
+  };
+
+  const handleExportMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const exportToPDF = () => {
+    // Crear contenido HTML para el PDF
+    const content = `
+      <html>
+        <head>
+          <title>Reporte de Transacciones</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Transacciones</h1>
+          <p>Fecha de generación: ${new Date().toLocaleDateString('es-ES')}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Comprador</th>
+                <th>Vendedor</th>
+                <th>Vehículo</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Descripción</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${transactions.map(transaction => `
+                <tr>
+                  <td>${transaction.id_transaction}</td>
+                  <td>${transaction.buyerInfo ? `${transaction.buyerInfo.name} (${transaction.buyerInfo.email})` : 'No asignado'}</td>
+                  <td>${transaction.sellerInfo ? `${transaction.sellerInfo.name} (${transaction.sellerInfo.email})` : 'No asignado'}</td>
+                  <td>${transaction.vehicleInfo ? `${transaction.vehicleInfo.description} ${transaction.vehicleInfo.plate ? `(${transaction.vehicleInfo.plate})` : ''}` : 'No asignado'}</td>
+                  <td>$${transaction.amount ? transaction.amount.toLocaleString() : '0'}</td>
+                  <td>${getTransactionStatusName(transaction.statusInfo?.id_status?.toString() || transaction.id_status?.toString() || '1')}</td>
+                  <td>${transaction.description || 'Sin descripción'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // Crear ventana para imprimir
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+    
+    handleExportMenuClose();
+  };
+
+  const exportToExcel = () => {
+    // Preparar datos para CSV (compatible con Excel)
+    const headers = ['ID', 'Comprador', 'Vendedor', 'Vehículo', 'Monto', 'Estado', 'Descripción'];
+    
+    const csvData = transactions.map(transaction => [
+      transaction.id_transaction,
+      transaction.buyerInfo ? `${transaction.buyerInfo.name} (${transaction.buyerInfo.email})` : 'No asignado',
+      transaction.sellerInfo ? `${transaction.sellerInfo.name} (${transaction.sellerInfo.email})` : 'No asignado',
+      transaction.vehicleInfo ? `${transaction.vehicleInfo.description} ${transaction.vehicleInfo.plate ? `(${transaction.vehicleInfo.plate})` : ''}` : 'No asignado',
+      transaction.amount ? transaction.amount : 0,
+      getTransactionStatusName(transaction.statusInfo?.id_status?.toString() || transaction.id_status?.toString() || '1'),
+      transaction.description || 'Sin descripción'
+    ]);
+
+    // Crear CSV content
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => 
+        row.map(cell => 
+          typeof cell === 'string' && cell.includes(',') ? `"${cell}"` : cell
+        ).join(',')
+      )
+    ].join('\n');
+
+    // Crear y descargar archivo
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transacciones_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    handleExportMenuClose();
   };
 
   const columns: GridColDef[] = [
@@ -192,15 +304,34 @@ export default function TransactionsTable({
         display: 'flex',
         flexDirection: 'column'
       }}>
-        <Typography
-          variant="h1"
-          component="div"
-          fontSize={30}
-          sx={{ mt: 2, mb: 2, flexShrink: 0 }}
-          align="center"
-        >
-          Transacciones
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mt: 2, 
+          mb: 2, 
+          flexShrink: 0 
+        }}>
+          <Box sx={{ flex: 1 }} />
+          <Typography
+            variant="h1"
+            component="div"
+            fontSize={30}
+            sx={{ textAlign: "center", flex: 1 }}
+          >
+            Transacciones
+          </Typography>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              startIcon={<GetAppIcon />}
+              onClick={handleExportMenuClick}
+              size="small"
+            >
+              Exportar
+            </Button>
+          </Box>
+        </Box>
         
         <DataGrid
           rows={transactions}
@@ -283,6 +414,24 @@ export default function TransactionsTable({
           </div>
         )}
       </Dialog>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={exportMenuOpen}
+        onClose={handleExportMenuClose}
+        MenuListProps={{
+          'aria-labelledby': 'export-button',
+        }}
+      >
+        <MenuItem onClick={exportToPDF}>
+          <PictureAsPdfIcon sx={{ mr: 1 }} />
+          Exportar como PDF
+        </MenuItem>
+        <MenuItem onClick={exportToExcel}>
+          <TableViewIcon sx={{ mr: 1 }} />
+          Exportar como Excel (CSV)
+        </MenuItem>
+      </Menu>
 
       <Dialog open={isEditModalOpen} onClose={handleCloseEditModal} maxWidth="md" fullWidth>
         {selectedTransaction && (

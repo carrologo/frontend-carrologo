@@ -3,12 +3,15 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { Dialog } from '@mui/material';
+import { Dialog, Button, Box, Menu, MenuItem } from '@mui/material';
 import { Vehicle } from '../../../interfaces/vehicles.interface';
 import { ModalViewVehicle } from '../../templates/modal-view-vehicle/ModalViewVehicle';
 import { ModalEditVehicle } from '../../templates/modal-edit-vehicle/ModalEditVehicle';
 import IconButton from '@mui/material/IconButton';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
+import GetAppIcon from '@mui/icons-material/GetApp';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import TableViewIcon from '@mui/icons-material/TableView';
 
 import './Vehicletable.css';
 
@@ -32,6 +35,8 @@ export default function VehicleTable({
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const exportMenuOpen = Boolean(anchorEl);
 
   const handlePaginationModelChange = (newModel: { page: number; pageSize: number }) => {
     onPaginationChange(newModel.page + 1, newModel.pageSize);
@@ -62,6 +67,126 @@ export default function VehicleTable({
     if (onUpdateVehicles) {
       onUpdateVehicles(paginationModel.page + 1, paginationModel.pageSize);
     }
+  };
+
+  const handleExportMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const exportToPDF = () => {
+    const content = `
+      <html>
+        <head>
+          <title>Reporte de Vehículos</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Vehículos</h1>
+          <p>Fecha de generación: ${new Date().toLocaleDateString('es-ES')}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Marca</th>
+                <th>Línea</th>
+                <th>Versión</th>
+                <th>Tipo</th>
+                <th>Placa</th>
+                <th>Año</th>
+                <th>Transmisión</th>
+                <th>Tracción</th>
+                <th>Combustible</th>
+                <th>Kilometraje</th>
+                <th>Cilindrada</th>
+                <th>Material Asientos</th>
+                <th>Airbags</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${vehicles.map(vehicle => `
+                <tr>
+                  <td>${vehicle.brand}</td>
+                  <td>${vehicle.line}</td>
+                  <td>${vehicle.version}</td>
+                  <td>${vehicle.type}</td>
+                  <td>${vehicle.plate}</td>
+                  <td>${new Date(vehicle.model).getFullYear()}</td>
+                  <td>${vehicle.transmission}</td>
+                  <td>${vehicle.traction}</td>
+                  <td>${vehicle.fuel_type}</td>
+                  <td>${vehicle.kms.toLocaleString()} km</td>
+                  <td>${vehicle.displacement} cc</td>
+                  <td>${vehicle.seat_material}</td>
+                  <td>${vehicle.airbags ? 'Sí' : 'No'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+    
+    handleExportMenuClose();
+  };
+
+  const exportToExcel = () => {
+    const headers = ['Marca', 'Línea', 'Versión', 'Tipo', 'Placa', 'Año', 'Transmisión', 'Tracción', 'Combustible', 'Kilometraje', 'Cilindrada', 'Material Asientos', 'Airbags'];
+    
+    const csvData = vehicles.map(vehicle => [
+      vehicle.brand,
+      vehicle.line,
+      vehicle.version,
+      vehicle.type,
+      vehicle.plate,
+      new Date(vehicle.model).getFullYear(),
+      vehicle.transmission,
+      vehicle.traction,
+      vehicle.fuel_type,
+      vehicle.kms,
+      vehicle.displacement,
+      vehicle.seat_material,
+      vehicle.airbags ? 'Sí' : 'No'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => 
+        row.map(cell => 
+          typeof cell === 'string' && cell.includes(',') ? `"${cell}"` : cell
+        ).join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `vehiculos_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    handleExportMenuClose();
   };
 
   const columns: GridColDef[] = [
@@ -130,15 +255,34 @@ export default function VehicleTable({
         display: 'flex',
         flexDirection: 'column'
       }}>
-        <Typography
-          variant="h1"
-          component="div"
-          fontSize={30}
-          sx={{ mt: 2, mb: 2, flexShrink: 0 }}
-          align="center"
-        >
-          Vehículos
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mt: 2, 
+          mb: 2, 
+          flexShrink: 0 
+        }}>
+          <Box sx={{ flex: 1 }} />
+          <Typography
+            variant="h1"
+            component="div"
+            fontSize={30}
+            sx={{ textAlign: "center", flex: 1 }}
+          >
+            Vehículos
+          </Typography>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              startIcon={<GetAppIcon />}
+              onClick={handleExportMenuClick}
+              size="small"
+            >
+              Exportar
+            </Button>
+          </Box>
+        </Box>
         
         <DataGrid
           rows={vehicles}
@@ -182,6 +326,24 @@ export default function VehicleTable({
           />
         )}
       </Dialog>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={exportMenuOpen}
+        onClose={handleExportMenuClose}
+        MenuListProps={{
+          'aria-labelledby': 'export-button',
+        }}
+      >
+        <MenuItem onClick={exportToPDF}>
+          <PictureAsPdfIcon sx={{ mr: 1 }} />
+          Exportar como PDF
+        </MenuItem>
+        <MenuItem onClick={exportToExcel}>
+          <TableViewIcon sx={{ mr: 1 }} />
+          Exportar como Excel (CSV)
+        </MenuItem>
+      </Menu>
       
     </div>
   );

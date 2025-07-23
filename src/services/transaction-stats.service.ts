@@ -14,15 +14,29 @@ export interface CompletedTransactionsResponse {
 
 export const getCompletedTransactionsByMonth = async (months: number = 6): Promise<MonthlyCompletedTransactions[]> => {
   try {
-    // Obtener todas las transacciones completadas (estado 5)
-    const response = await doGet<{ data: any[], pagination: any }>(`/transactions?findBy=id_status&value=5&limit=1000`, 'transactions');
+    // Obtener todas las transacciones completadas (estado 5) con paginación
+    let allTransactions: any[] = [];
+    let page = 1;
+    let hasMoreData = true;
     
-    if (!response.data || !response.data.data) {
-      return [];
+    while (hasMoreData) {
+      const response = await doGet<{ data: any[], pagination: any }>(`/transactions?findBy=id_status&value=5&limit=100&page=${page}`, 'transactions');
+      
+      if (!response.data || !response.data.data) {
+        break;
+      }
+
+      allTransactions = [...allTransactions, ...response.data.data];
+      
+      // Verificar si hay más páginas
+      const pagination = response.data.pagination;
+      if (!pagination || page >= Math.ceil(pagination.total / 100)) {
+        hasMoreData = false;
+      } else {
+        page++;
+      }
     }
 
-    const transactions = response.data.data;
-    
     // Procesar las transacciones para agruparlas por mes
     const monthlyData: { [key: string]: MonthlyCompletedTransactions } = {};
     
@@ -46,7 +60,7 @@ export const getCompletedTransactionsByMonth = async (months: number = 6): Promi
     }
     
     // Contar transacciones por mes
-    transactions.forEach((transaction: any) => {
+    allTransactions.forEach((transaction: any) => {
       if (transaction.close_date) {
         const closeDate = new Date(transaction.close_date);
         const monthKey = `${closeDate.getFullYear()}-${String(closeDate.getMonth() + 1).padStart(2, '0')}`;

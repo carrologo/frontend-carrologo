@@ -3,6 +3,7 @@ import BirthdateList from "../../molecules/Birthday-List/BirthdayList";
 import ExpiringDocumentsList from "../../molecules/Expiring-Documents/ExpiringDocumentsList";
 import StatsCards from "../../molecules/stats-cards/StastCards";
 import UrgentNotificationsModal from "../../molecules/urgent-notifications-modal/UrgentNotificationsModal";
+import CompletedTransactionsChart from "../../molecules/charts/CompletedTransactionsChart";
 import Grid from "@mui/material/Grid";
 import { getNotifications } from "../../../services/notifications.service";
 import { UpcomingBirthday, ExpiringDocument } from "../../../interfaces/notifications.interface";
@@ -57,7 +58,7 @@ const Home = () => {
             <StatsCards />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
-            <h2 style={{ color: "#000000ff" }}>Espacio para gráficos</h2>
+            <CompletedTransactionsChart />
           </Grid>
           <Grid size={{ xs: 12, md: 4 }}>
             <BirthdateList upcomingBirthdays={upcomingBirthdays} loading={loading} />

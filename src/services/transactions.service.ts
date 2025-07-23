@@ -1,4 +1,4 @@
-import { doGet, doPost, doPatch } from "../core/api/api";
+import { doGet, doPost, doPut } from "../core/api/api";
 import { TransactionTableData } from "../interfaces/transactions.interface";
 import { showErrorToast, showSuccessToast } from "../utils/toast.utils";
 import { document_transaction} from "../interfaces/commons.interface";
@@ -116,7 +116,10 @@ export const createTransaction = async <T>(values: CreateTransactionPost): Promi
 
 export const updateTransaction = async (id: string, values: Partial<CreateTransactionPost>): Promise<void> => {
   try {
-    await doPatch(`/transactions/${id}`, values, 'transactions');
+    // Excluir el campo documents del payload para la actualización
+    const { documents, ...updatePayload } = values;
+    
+    await doPut(`/transactions/${id}`, updatePayload, 'transactions');
     showSuccessToast('Transacción actualizada exitosamente');
   } catch (error) {
     showErrorToast(error, 'Error al actualizar la transacción');

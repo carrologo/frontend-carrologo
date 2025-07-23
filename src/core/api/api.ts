@@ -168,3 +168,31 @@ export const doPatch = async <T, D>(
     );
   }
 };
+
+// Generic doPut function
+export const doPut = async <T, D>(
+  resource: string,
+  data: D,
+  apiType: ApiType
+): Promise<ApiResponse<T>> => {
+  try {
+    const baseUrl = baseUrlMap[apiType];
+    if (!baseUrl) {
+      throw new Error(`No base URL defined for apiType: ${apiType}`);
+    }
+    const url = resource.startsWith('/')
+      ? `${baseUrl}${resource}`
+      : `${baseUrl}/${resource}`;
+    const response: ApiResponse<T> = await axios.put(url, data);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+    };
+  } catch (error) {
+    const axiosError = error as { response: { data: ApiError } };
+    throw new Error(
+      axiosError.response?.data?.message || 'Error performing PUT request'
+    );
+  }
+};

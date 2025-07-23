@@ -56,10 +56,10 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialValues, setInitialValues] = useState<UpdateTransactionPost | null>(null);
-  const [documents, setDocuments] = useState<string>('');
   const [transactionData, setTransactionData] = useState<Transaction | null>(null);
 
   useEffect(() => {
+    console.log('Valores totales de clientes:', clients.length);
     if (open && transactionId) {
       loadInitialData();
     }
@@ -69,10 +69,11 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
     setLoading(true);
     try {
       const [clientsData, vehiclesData, transactionData] = await Promise.all([
-        getClients(),
+        getClients(1, 1000), // Cargar todos los clientes
         getVehicles(),
         getTransactionById(transactionId.toString())
       ]);
+
 
       setClients(clientsData.data);
       setVehicles(vehiclesData.data);
@@ -82,17 +83,15 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
       
       // Usar los IDs de la transacción para preseleccionar los valores
       setInitialValues({
-        id_buyer: transaction.id_buyer,
-        id_seller: transaction.id_seller,
-        id_vehicle: transaction.id_vehicle,
+        id_buyer: transaction.buyerInfo?.id || null,
+        id_seller: transaction.sellerInfo?.id ?? null,
+        id_vehicle: transaction.vehicleInfo?.id || null,
         amount: transaction.amount,
         description: transaction.description || '',
         id_status: transaction.id_status || 1,
       });
 
-      if (transaction.documents) {
-        setDocuments(transaction.documents);
-      }
+      // Los documentos no son editables, solo se muestran
     } catch (error) {
       console.error('Error loading initial data:', error);
       showErrorToast('Error al cargar los datos iniciales');
@@ -104,12 +103,10 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
   const handleSubmit = async (values: UpdateTransactionPost) => {
     setLoading(true);
     try {
-      const payload = {
-        ...values,
-        documents: documents ? [{ name: 'document', base64: documents }] : null,
-      };
-
-      await updateTransaction(transactionId.toString(), payload);
+      // Excluir el campo documents ya que no es editable
+      const { documents, ...updatePayload } = values;
+      
+      await updateTransaction(transactionId.toString(), updatePayload);
       showSuccessToast('Transacción actualizada exitosamente');
       onSuccess();
       handleClose();
@@ -130,12 +127,22 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
 
   const handleClose = () => {
     setInitialValues(null);
-    setDocuments('');
     setTransactionData(null);
     onClose();
   };
 
-  if (!initialValues) {
+  // Helper functions para encontrar las opciones seleccionadas
+  const findSelectedClient = (clientId: number | null): Client | null => {
+    if (!clientId || clients.length === 0) return null;
+    return clients.find(client => Number(client.id) === Number(clientId)) || null;
+  };
+
+  const findSelectedVehicle = (vehicleId: number | null): Vehicle | null => {
+    if (!vehicleId || vehicles.length === 0) return null;
+    return vehicles.find(vehicle => Number(vehicle.id) === Number(vehicleId)) || null;
+  };
+
+  if (!initialValues || clients.length === 0 || vehicles.length === 0) {
     return (
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogContent>
@@ -147,6 +154,8 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
       </Dialog>
     );
   }
+  
+;
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
@@ -178,7 +187,7 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                     <Autocomplete
                       options={clients}
                       getOptionLabel={(option) => `${option.name} ${option.lastName} - ${option.identification}`}
-                      value={clients.find(client => client.id === values.id_buyer) || null}
+                      value={findSelectedClient(values.id_buyer)}
                       onChange={(_, newValue) => {
                         setFieldValue('id_buyer', newValue?.id || null);
                       }}
@@ -195,25 +204,28 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                         />
                       )}
                       sx={{ flex: 1 }}
-                      renderOption={(props, option) => (
-                        <li {...props}>
-                          <Box>
-                            <Typography variant="body1">
-                              {option.name} {option.lastName} - {option.identification}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {option.email}
-                            </Typography>
-                          </Box>
-                        </li>
-                      )}
+                        renderOption={(props, option) => {
+                          const { key, ...rest } = props;
+                          return (
+                            <li key={key} {...rest}>
+                              <Box>
+                                <Typography variant="body1">
+                                  {option.name} {option.lastName} - {option.identification}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {option.email}
+                                </Typography>
+                              </Box>
+                            </li>
+                          );
+                        }}
                     />
 
                     {/* Vendedor */}
                     <Autocomplete
                       options={clients}
                       getOptionLabel={(option) => `${option.name} ${option.lastName} - ${option.identification}`}
-                      value={clients.find(client => client.id === values.id_seller) || null}
+                      value={findSelectedClient(values.id_seller)}
                       onChange={(_, newValue) => {
                         setFieldValue('id_seller', newValue?.id || null);
                       }}
@@ -228,20 +240,24 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                             'Buscar vendedor...'
                           }
                         />
+                        
                       )}
                       sx={{ flex: 1 }}
-                      renderOption={(props, option) => (
-                        <li {...props}>
-                          <Box>
-                            <Typography variant="body1">
-                              {option.name} {option.lastName} - {option.identification}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {option.email}
-                            </Typography>
-                          </Box>
-                        </li>
-                      )}
+                        renderOption={(props, option) => {
+                          const { key, ...rest } = props;
+                          return (
+                            <li key={key} {...rest}>
+                              <Box>
+                                <Typography variant="body1">
+                                  {option.name} {option.lastName} - {option.identification}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {option.email}
+                                </Typography>
+                              </Box>
+                            </li>
+                          );
+                        }}
                     />
                   </Box>
 
@@ -250,7 +266,7 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                     <Autocomplete
                       options={vehicles}
                       getOptionLabel={(option) => `${option.brand} ${option.line} - ${option.plate}`}
-                      value={vehicles.find(vehicle => vehicle.id === values.id_vehicle) || null}
+                      value={findSelectedVehicle(values.id_vehicle)}
                       onChange={(_, newValue) => {
                         setFieldValue('id_vehicle', newValue?.id || null);
                       }}

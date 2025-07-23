@@ -356,6 +356,23 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                         </Button>
                       </Box>
                     )}
+                                        {transactionData?.url_documents && (
+                      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Imagenes del Vehiculo:
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          href={transactionData.url_documents}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          disabled={!transactionData.url_documents}
+                        >
+                          Ver Documento
+                        </Button>
+                      </Box>
+                    )}
                   </Box>
 
                   {/* Descripción */}

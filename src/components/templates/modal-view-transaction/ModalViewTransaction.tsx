@@ -1,8 +1,8 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography, TextField, Chip, Divider } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Box, Typography, TextField, Chip, Divider, Snackbar, Alert } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState, useEffect } from "react";
 import { getTransactionById } from "../../../services/transactions.service";
-import { transactionStatusMap } from "../../../utils/transactionStatus.utils";
+import { getTransactionStatusName, getTransactionStatusColor } from "../../../utils/transactionStatus.utils";
 import { Transaction } from "../../../interfaces/transactions.interface";
 import DescriptionIcon from "@mui/icons-material/Description";
 import PersonIcon from "@mui/icons-material/Person";
@@ -20,6 +20,7 @@ interface ModalViewTransactionProps {
 export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalViewTransactionProps) => {
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     if (open && transactionId) {
@@ -60,19 +61,20 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
     }).format(amount);
   };
 
-  const getStatusColor = (statusId: number) => {
-    const statusColors: { [key: number]: string } = {
-      1: 'info',     // Nuevo
-      2: 'warning',  // En proceso
-      3: 'success',  // Completado
-      4: 'error'     // Cancelado
-    };
-    return statusColors[statusId] || 'default';
-  };
-
   const handleClose = () => {
     setTransaction(null);
     onClose();
+  };
+
+  const handleViewImages = () => {
+    // Intentar obtener la URL de imágenes del vehículo
+    const vehicleImageUrl = (transaction?.vehicleInfo as any)?.url_images;
+    if (vehicleImageUrl) {
+      window.open(vehicleImageUrl, "_blank");
+    } else {
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    }
   };
 
   if (loading) {
@@ -120,9 +122,21 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">Estado de la Transacción</Typography>
               <Chip
-                label={transactionStatusMap[(transaction.id_status?.toString() || '1') as keyof typeof transactionStatusMap] || 'Desconocido'}
-                color={getStatusColor(transaction.id_status || 1) as any}
-                variant="filled"
+                label={getTransactionStatusName(
+                  transaction.statusInfo?.id_status?.toString() || 
+                  transaction.id_status?.toString() || 
+                  '1'
+                )}
+                style={{ 
+                  backgroundColor: getTransactionStatusColor(
+                    transaction.statusInfo?.id_status?.toString() || 
+                    transaction.id_status?.toString() || 
+                    '1'
+                  ), 
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}
+                size="small"
               />
             </Box>
             
@@ -266,24 +280,36 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
             </Box>
             
             <Box sx={{ pl: 4 }}>
-              {transaction.url_documents ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <DescriptionIcon color="action" />
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                {transaction.url_documents ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <DescriptionIcon color="action" />
+                    <Button 
+                      variant="outlined" 
+                      size="small"
+                      href={transaction.url_documents}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ver Documentos
+                    </Button>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No hay documentos adjuntos
+                  </Typography>
+                )}
+                
+                {transaction?.vehicleInfo && (
                   <Button 
-                    variant="outlined" 
+                    variant="contained" 
                     size="small"
-                    href={transaction.url_documents}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={handleViewImages}
                   >
-                    Ver Documentos
+                    Ver Imágenes del Vehículo
                   </Button>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No hay documentos adjuntos
-                </Typography>
-              )}
+                )}
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -298,6 +324,30 @@ export const ModalViewTransaction = ({ open, onClose, transactionId }: ModalView
           Cerrar
         </Button>
       </DialogActions>
+
+      <Snackbar 
+        open={showAlert} 
+        autoHideDuration={3000} 
+        onClose={() => setShowAlert(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ 
+          position: 'fixed',
+          top: 80,
+          zIndex: 9999
+        }}
+      >
+        <Alert 
+          severity="warning" 
+          onClose={() => setShowAlert(false)}
+          sx={{
+            minWidth: 300,
+            fontSize: '1rem',
+            fontWeight: 'bold'
+          }}
+        >
+          No hay una URL de imágenes asignada a este vehículo.
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };

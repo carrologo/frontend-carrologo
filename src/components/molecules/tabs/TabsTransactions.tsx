@@ -3,7 +3,7 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import GridViewIcon from "@mui/icons-material/GridView";
 import ListIcon from "@mui/icons-material/List";
-import { useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   FormControl,
@@ -11,27 +11,21 @@ import {
   MenuItem,
   Select,
   TextField,
+  CircularProgress,
 } from "@mui/material";
 import { TabPanel } from "../../atoms/tabPanel/TabPanel";
 import { Transaction } from "../../../interfaces/transactions.interface";
-import { transactionStatusMap } from "../../../utils/transactionStatus.utils";
+import { transactionStatusMap, getTransactionStatusName } from "../../../utils/transactionStatus.utils";
 import ActiveTransactions from "../../organisms/active-transactions/ActiveTransactions";
 import TransactionsTable from "../../organisms/transactions-table/TransactionsTable";
 import { ModalCreateTransaction } from "../../templates/modal-create-transaction/ModalCreateTransaction";
 import { ModalViewTransaction } from "../../templates/modal-view-transaction/ModalViewTransaction";
 import { ModalEditTransaction } from "../../templates/modal-edit-transaction/ModalEditTransaction";
+import { getValues, TransactionStatus } from "../../../services/values.service";
+import { getTransactions } from "../../../services/transactions.service";
 
-interface TabsTransactionsProps {
-  dataTransactions: Transaction[];
-  onUpdateTransactions: (page?: number, limit?: number) => void;
-  pagination?: { page: number; total: number };
-}
 
-const TabsTransactions = ({
-  dataTransactions = [],
-  onUpdateTransactions,
-  pagination,
-}: TabsTransactionsProps) => {
+const TabsTransactions = () => {
   const [value, setValue] = useState("1");
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
@@ -40,20 +34,124 @@ const TabsTransactions = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("buyerInfo");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 50,
-  });
+  const [transactionStatuses, setTransactionStatuses] = useState<TransactionStatus[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [pagination, setPagination] = useState<{ page: number; total: number }>({ page: 1, total: 0 });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 });
+
+  const searchOptions = [
+    { value: "buyerInfo", label: "Comprador" },
+    { value: "sellerInfo", label: "Vendedor" },
+    { value: "vehicleInfo", label: "Vehículo" },
+    { value: "amount", label: "Monto" },
+    { value: "description", label: "Descripción" },
+  ];
+
+  const fieldMap: Record<string, string> = {
+    buyerInfo: "buyer_name",
+    sellerInfo: "seller_name",
+    vehicleInfo: "vehicle_plate",
+    amount: "amount",
+    description: "description",
+  };
+
+  useEffect(() => {
+    const loadStatuses = async () => {
+      try {
+        const values = await getValues();
+        setTransactionStatuses(values.data.transactionStatuses);
+      } catch (err) {
+        console.error("Error al cargar estados:", err);
+      }
+    };
+    loadStatuses();
+  }, []);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setLoading(true);
+      const page = paginationModel.page + 1;
+      const limit = paginationModel.pageSize;
+
+      try {
+        let findBy: string | undefined;
+        let value: string | undefined;
+
+        // Prioridad al filtro de estado si está seleccionado
+        if (statusFilter !== "all") {
+          findBy = "id_status";
+          value = statusFilter;
+        } else if (searchTerm && searchField) {
+          // Si no hay filtro de estado pero sí búsqueda por texto
+          const mappedField = fieldMap[searchField] || searchField;
+          findBy = mappedField;
+          value = searchTerm;
+        }
+
+        const response = await getTransactions(
+          page,
+          limit,
+          findBy,
+          value
+        );
+        setTransactions(response.data || []);
+        setPagination(response.pagination || { page, total: 0 });
+      } catch (err) {
+        console.error("Error al obtener transacciones:", err);
+        setTransactions([]);
+        setPagination({ page, total: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, [paginationModel, searchTerm, searchField, statusFilter]);
 
   const handleChange = (newValue: string) => setValue(newValue);
 
   const handlePaginationChange = (page: number, pageSize: number) => {
     setPaginationModel({ page: page - 1, pageSize });
-    onUpdateTransactions(page, pageSize);
   };
 
   const handleCreateTransaction = () => {
-    onUpdateTransactions(paginationModel.page + 1, paginationModel.pageSize);
+    // Recargar la página actual después de crear una transacción
+    const page = paginationModel.page + 1;
+    const limit = paginationModel.pageSize;
+
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        let findBy: string | undefined;
+        let value: string | undefined;
+
+        // Prioridad al filtro de estado si está seleccionado
+        if (statusFilter !== "all") {
+          findBy = "id_status";
+          value = statusFilter;
+        } else if (searchTerm && searchField) {
+          // Si no hay filtro de estado pero sí búsqueda por texto
+          const mappedField = fieldMap[searchField] || searchField;
+          findBy = mappedField;
+          value = searchTerm;
+        }
+
+        const response = await getTransactions(
+          page,
+          limit,
+          findBy,
+          value
+        );
+        setTransactions(response.data || []);
+        setPagination(response.pagination || { page, total: 0 });
+      } catch (err) {
+        console.error("Error al obtener transacciones:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
   };
 
   const handleViewTransaction = (transactionId: string) => {
@@ -79,77 +177,73 @@ const TabsTransactions = ({
   const handleEditSuccess = () => {
     setOpenEditModal(false);
     setSelectedTransactionId(null);
-    onUpdateTransactions(paginationModel.page + 1, paginationModel.pageSize);
-  };
+    
+    // Recargar la página actual después de editar una transacción
+    const page = paginationModel.page + 1;
+    const limit = paginationModel.pageSize;
 
-  const searchOptions = [
-    { value: "buyerInfo", label: "Comprador" },
-    { value: "sellerInfo", label: "Vendedor" },
-    { value: "vehicleInfo", label: "Vehículo" },
-    { value: "statusInfo", label: "Estado" },
-    { value: "amount", label: "Monto" },
-    { value: "description", label: "Descripción" },
-  ];
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        let findBy: string | undefined;
+        let value: string | undefined;
 
-  const filteredTransactions = useMemo(() => {
-    let filtered = dataTransactions;
-
-    // Filtrar por estado si no es "all"
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(transaction => transaction.id_status?.toString() === statusFilter);
-    }
-
-    // Filtrar por término de búsqueda
-    if (searchTerm) {
-      const lowerSearchTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter((transaction) => {
-        if (searchField === "amount") {
-          return transaction.amount?.toString().includes(searchTerm) || false;
-        } else if (searchField === "statusInfo") {
-          // Buscar en el nombre del estado
-          return transaction.statusInfo?.name?.toLowerCase().includes(lowerSearchTerm) || false;
-        } else if (searchField === "buyerInfo") {
-          // Buscar en nombre y email del comprador
-          return transaction.buyerInfo?.name?.toLowerCase().includes(lowerSearchTerm) ||
-                 transaction.buyerInfo?.email?.toLowerCase().includes(lowerSearchTerm) || false;
-        } else if (searchField === "sellerInfo") {
-          // Buscar en nombre y email del vendedor
-          return transaction.sellerInfo?.name?.toLowerCase().includes(lowerSearchTerm) ||
-                 transaction.sellerInfo?.email?.toLowerCase().includes(lowerSearchTerm) || false;
-        } else if (searchField === "vehicleInfo") {
-          // Buscar en descripción y placa del vehículo
-          return transaction.vehicleInfo?.description?.toLowerCase().includes(lowerSearchTerm) ||
-                 transaction.vehicleInfo?.plate?.toLowerCase().includes(lowerSearchTerm) || false;
+        // Prioridad al filtro de estado si está seleccionado
+        if (statusFilter !== "all") {
+          findBy = "id_status";
+          value = statusFilter;
+        } else if (searchTerm && searchField) {
+          // Si no hay filtro de estado pero sí búsqueda por texto
+          const mappedField = fieldMap[searchField] || searchField;
+          findBy = mappedField;
+          value = searchTerm;
         }
-        return transaction[searchField as keyof Transaction]
-          ?.toString()
-          .toLowerCase()
-          .includes(lowerSearchTerm);
-      });
-    }
 
-    return filtered;
-  }, [dataTransactions, searchTerm, searchField, statusFilter]);
+        const response = await getTransactions(
+          page,
+          limit,
+          findBy,
+          value
+        );
+        setTransactions(response.data || []);
+        setPagination(response.pagination || { page, total: 0 });
+      } catch (err) {
+        console.error("Error al obtener transacciones:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  };
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-around",
-          alignItems: "center",
-          m: 2,
-          flexDirection: { xs: "column", sm: "row" },
-          gap: { xs: 2, sm: 1 },
-        }}
-      >
+      {loading ? (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '300px' 
+        }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+              m: 2,
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 2, sm: 1 },
+            }}
+          >
         <Button
           variant="contained"
           onClick={() => setOpenCreateModal(true)}
-          sx={{
-            minWidth: { xs: "100%", sm: "auto" },
-            maxWidth: { xs: "300px" },
-          }}
+          sx={{ minWidth: { xs: "100%", sm: "auto" }, maxWidth: { xs: "300px" } }}
         >
           Agregar Transacción
         </Button>
@@ -164,13 +258,7 @@ const TabsTransactions = ({
             gap: { xs: 2, sm: 1 },
           }}
         >
-          <FormControl
-            size="small"
-            sx={{
-              minWidth: { xs: "100%", sm: 120 },
-              maxWidth: { xs: "300px" },
-            }}
-          >
+          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 120 }, maxWidth: { xs: "300px" } }}>
             <InputLabel id="status-filter-label">Filtrar por estado</InputLabel>
             <Select
               labelId="status-filter-label"
@@ -179,21 +267,23 @@ const TabsTransactions = ({
               onChange={(e) => setStatusFilter(e.target.value)}
             >
               <MenuItem value="all">Todos</MenuItem>
-              {Object.entries(transactionStatusMap).map(([id, name]) => (
-                <MenuItem key={id} value={id}>
-                  {name}
-                </MenuItem>
-              ))}
+              {transactionStatuses.length > 0 ? (
+                transactionStatuses.map((status) => (
+                  <MenuItem key={status.id_status} value={status.id_status.toString()}>
+                    {getTransactionStatusName(status.id_status.toString())}
+                  </MenuItem>
+                ))
+              ) : (
+                Object.entries(transactionStatusMap).map(([id, name]) => (
+                  <MenuItem key={id} value={id}>
+                    {name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
 
-          <FormControl
-            size="small"
-            sx={{
-              minWidth: { xs: "100%", sm: 150 },
-              maxWidth: { xs: "300px" },
-            }}
-          >
+          <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 150 }, maxWidth: { xs: "300px" } }}>
             <InputLabel id="search-field-label">Buscar por</InputLabel>
             <Select
               labelId="search-field-label"
@@ -210,17 +300,12 @@ const TabsTransactions = ({
           </FormControl>
 
           <TextField
-            label={`Buscar por ${
-              searchOptions.find((opt) => opt.value === searchField)?.label.toLowerCase()
-            }`}
+            label={`Buscar por ${searchOptions.find((opt) => opt.value === searchField)?.label.toLowerCase()}`}
             variant="outlined"
             size="small"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{
-              width: { xs: "100%", sm: "200px" },
-              maxWidth: { xs: "200px" },
-            }}
+            sx={{ width: { xs: "100%", sm: "200px" }, maxWidth: { xs: "200px" } }}
           />
         </Box>
 
@@ -234,10 +319,10 @@ const TabsTransactions = ({
           <Tab icon={<ListIcon />} value="2" />
         </Tabs>
       </Box>
-      
+
       <TabPanel value={value} index="1">
-        <ActiveTransactions 
-          transactions={filteredTransactions} 
+        <ActiveTransactions
+          transactions={transactions}
           pagination={pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
@@ -245,10 +330,10 @@ const TabsTransactions = ({
           onEditTransaction={handleEditTransaction}
         />
       </TabPanel>
-      
+
       <TabPanel value={value} index="2">
-        <TransactionsTable 
-          transactions={filteredTransactions} 
+        <TransactionsTable
+          transactions={transactions}
           pagination={pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
@@ -275,6 +360,8 @@ const TabsTransactions = ({
         onSuccess={handleEditSuccess}
         transactionId={selectedTransactionId ? parseInt(selectedTransactionId) : 0}
       />
+        </>
+      )}
     </Box>
   );
 };

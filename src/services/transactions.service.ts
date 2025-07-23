@@ -13,9 +13,20 @@ export interface CreateTransactionPost {
   id_status: number;
 }
 
-export const getTransactions = async (page: number = 1, limit: number = 50): Promise<TransactionTableData> => {
+export const getTransactions = async (
+  page: number = 1, 
+  limit: number = 50, 
+  findBy?: string, 
+  value?: string
+): Promise<TransactionTableData> => {
   try {
-    const response = await doGet<TransactionTableData>(`/transactions?page=${page}&limit=${limit}`, 'transactions');
+    let queryParams = `page=${page}&limit=${limit}`;
+    
+    if (findBy && value) {
+      queryParams += `&findBy=${encodeURIComponent(findBy)}&value=${encodeURIComponent(value)}`;
+    }
+    
+    const response = await doGet<TransactionTableData>(`/transactions?${queryParams}`, 'transactions');
     return response.data;
   } catch (error) {
     showErrorToast(error, 'Error al cargar las transacciones');

@@ -1,4 +1,8 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
+import { useEffect } from "react";
+import { getValues } from '../../../services/values.service';
+import { Debt, UpdateVehicleDebt } from '../../../interfaces/vehicles.interface';
+import { DebtManager } from '../../molecules/debt-manager/DebtManager';
 import * as Yup from "yup";
 import { updateVehicle, UpdateVehiclePost } from "../../../services/vehicles.service";
 import dayjs from 'dayjs';
@@ -35,9 +39,14 @@ const field2: FieldConfig[] = [
   { name: "documents", label: "Documentos del Vehículo", type: "documents", required: true },
 ];
 
+const field3: FieldConfig[] = [
+  { name: "debts", label: "Deudas del Vehículo", type: "debts", required: false },
+];
+
 const steps = [
   { title: "Información Básica", fields: field1 },
   { title: "Documentación", fields: field2 },
+  { title: "Deudas", fields: field3 },
 ];
 
 const validationSchema = Yup.object({
@@ -106,11 +115,30 @@ const parsedInitialData = {
       idVehicle: doc.idVehicle // Conservar relación con vehículo
     };
   }) || [], // Formatear fechas de documentos existentes
+  debts: initialData.debts?.map(debt => ({
+    id: debt.id,
+    amount: debt.amount,
+    typeDebtId: typeof debt.typeDebtId === 'number' ? debt.typeDebtId : (typeof debt.type_debt_id === 'number' ? debt.type_debt_id : 1),
+  })) || [],
 };
 
 
   const [currentStep, setCurrentStep] = useState(0);
   const [showImageAlert, setShowImageAlert] = useState(false);
+  const [typeDebtsOptions, setTypeDebtsOptions] = useState<{ value: number; label: string }[]>([]);
+  // Cargar tipos de deudas para el DebtManager
+  useEffect(() => {
+    const fetchTypeDebts = async () => {
+      try {
+        const response = await getValues();
+        const options = response.data.typeDebts.map((td: { id: number; name: string }) => ({ value: td.id, label: td.name }));
+        setTypeDebtsOptions(options);
+      } catch (error) {
+        console.error('Error al cargar tipos de deudas:', error);
+      }
+    };
+    fetchTypeDebts();
+  }, []);
 
   // Función para ver imágenes
   const handleViewImages = () => {
@@ -129,44 +157,55 @@ const parsedInitialData = {
     },
   });
 
+  // Restricción para el paso de documentos (debe ir después de formik)
+  const hasDocuments = Array.isArray(formik.values.documents) && formik.values.documents.length > 0;
+
 const handleUpdate = async (data: Record<string, unknown>) => {
   console.log("🔥 handleUpdate INICIADO con datos:", data);
   const toastId = showLoadingToast("Actualizando vehículo...");
-  
   try {
     const allDocuments = data.documents as VehicleDocument[] || [];
-    
+    const allDebts = data.debts as Debt[] || [];
+
     // Transformar TODOS los documentos válidos (existentes y nuevos)
     const transformedDocuments = allDocuments
-      .filter(doc => doc.document_type_id && doc.expiration_date) // Solo filtrar por campos requeridos
+      .filter(doc => doc.document_type_id && doc.expiration_date)
       .map(doc => ({
-        ...(doc.id && { id: doc.id }), // Solo incluir ID si existe (documentos existentes)
+        ...(doc.id && { id: doc.id }),
         document_type_id: doc.document_type_id,
         expiration_date: doc.expiration_date,
-        idVehicle: vehicleId // Usar el ID del vehículo que estamos editando
+        idVehicle: vehicleId
+      }));
+
+    // Transformar deudas para el update (compatibilidad con backend)
+    const transformedDebts = allDebts
+      .filter(debt => typeof debt.typeDebtId === 'number' && debt.amount)
+      .map(debt => ({
+        ...(debt.id && { id: debt.id }),
+        TypeDebtId: debt.typeDebtId,
+        amount: debt.amount
       }));
 
     // Sanitizar campos (quitar espacios)
     const transformedData: UpdateVehiclePost = {
-      type: data.type as string, // NO sanitizar
-      brand: data.brand as string, // NO sanitizar
-      line: data.line as string, // NO sanitizar
+      type: data.type as string,
+      brand: data.brand as string,
+      line: data.line as string,
       plate: String(data.plate).replace(/\s+/g, "").toUpperCase(),
       version: (data.version as string)?.replace(/\s+/g, ""),
       transmission: (data.transmission as string)?.replace(/\s+/g, ""),
       traction: (data.traction as string)?.replace(/\s+/g, ""),
       fuelType: (data.fuelType as string)?.replace(/\s+/g, ""),
       kms: Number(String(data.kms).replace(/\s+/g, "")),
-      model: dayjs(data.model as string).toISOString(), // NO sanitizar
+      model: dayjs(data.model as string).toISOString(),
       displacement: Number(String(data.displacement).replace(/\s+/g, "")),
-      seatMaterial: data.seatMaterial as string, // NO sanitizar
+      seatMaterial: data.seatMaterial as string,
       airbags: data.airbags as boolean,
-      documents: transformedDocuments as UpdateVehicleDocument[], // El backend maneja ambos casos
-      // No incluir images para que no se toquen las existentes
+      documents: transformedDocuments as UpdateVehicleDocument[],
+      debts: transformedDebts as UpdateVehicleDebt[],
     };
 
     await updateVehicle(vehicleId, transformedData);
-    
     updateToast(toastId, "¡Vehículo actualizado exitosamente!", "success");
     onVehicleEdited();
     onClose();
@@ -179,6 +218,11 @@ const handleUpdate = async (data: Record<string, unknown>) => {
 
   
     const handleNext = () => {
+    // Si estamos en el paso de documentos (step 1), solo permitir avanzar si hay al menos un documento
+    if (currentStep === 1 && !hasDocuments) {
+      formik.setFieldTouched('documents', true);
+      return;
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -211,7 +255,7 @@ const handleUpdate = async (data: Record<string, unknown>) => {
       onPrevious={handlePrevious}
       onSubmit={handleCustomSubmit}
       isSubmitting={formik.isSubmitting}
-      canProceed={true}
+      canProceed={currentStep !== 1 ? true : hasDocuments}
       submitButtonText="Actualizar Vehículo"
       submittingText="Actualizando..."
     >
@@ -243,12 +287,22 @@ const handleUpdate = async (data: Record<string, unknown>) => {
             </Box>
           )}
           
-          <DynamicForm 
-            fields={step.fields} 
-            formik={formik}
-            isEditMode={true}
-            imageUrl={imageUrl}
-          />
+          {/* Renderizar DebtManager en el paso de deudas */}
+          {step.fields[0]?.name === 'debts' ? (
+            <DebtManager
+              debts={formik.values.debts || []}
+              onChange={debts => formik.setFieldValue('debts', debts)}
+              error={formik.touched.debts && formik.errors.debts ? String(formik.errors.debts) : undefined}
+              typeDebtsOptions={typeDebtsOptions}
+            />
+          ) : (
+            <DynamicForm 
+              fields={step.fields} 
+              formik={formik}
+              isEditMode={true}
+              imageUrl={imageUrl}
+            />
+          )}
         </Box>
       ))}
     </MultiStepModal>

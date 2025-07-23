@@ -1,6 +1,6 @@
 import { doGet, doPost, doPatch} from "../core/api/api";
 import { Image } from "../interfaces/commons.interface";
-import { VehiclesTableData, VehicleDocument, UpdateVehicleDocument } from "../interfaces/vehicles.interface";
+import { VehiclesTableData, VehicleDocument, UpdateVehicleDocument, UpdateVehicleDebt } from "../interfaces/vehicles.interface";
 import { showErrorToast, showLoadingToast, updateToast, getErrorMessage } from "../utils/toast.utils";
 
 export interface CreateVehiclePost {
@@ -40,6 +40,7 @@ export interface UpdateVehiclePost {
   seatMaterial?: string;
   airbags?: boolean;
   documents?: UpdateVehicleDocument[]; // Usa la interfaz específica para actualización
+  debts?: UpdateVehicleDebt[];
 }
 
 export const getVehicles = async (page: number = 1, limit: number = 50): Promise<VehiclesTableData> => {

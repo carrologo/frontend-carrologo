@@ -71,9 +71,10 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
   };
 
   // Función para obtener el nombre del tipo de deuda
-  const getDebtTypeName = (type_debt_id: number): string => {
-    const debtType = typeDebts.find(type => type.id === type_debt_id);
-    return debtType ? debtType.name : `Tipo deuda ${type_debt_id}`;
+  const getDebtTypeName = (typeDebtId: number): string => {
+    
+    const debtType = typeDebts.find(type => type.id === typeDebtId);
+    return debtType ? debtType.name : `Tipo deuda ${typeDebtId}`;
   };
 
   // Función para ver imágenes
@@ -257,7 +258,7 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
                   <Typography variant="h6" component="div">
                     Deuda #{debt.id}
                   </Typography>
-                  <Chip label={getDebtTypeName(debt.type_debt_id)} size="small" color="warning" />
+          <Chip label={getDebtTypeName(debt.type_debt_id)} size="small" color="warning" />
                 </Box>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                   <Box>

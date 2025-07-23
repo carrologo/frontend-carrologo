@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { TabPanel } from "../../atoms/tabPanel/TabPanel";
 import { Transaction } from "../../../interfaces/transactions.interface";
-import { transactionStatusMap, getTransactionStatusName } from "../../../utils/transactionStatus.utils";
+import { transactionStatusMap, getTransactionStatusName, canEditTransaction } from "../../../utils/transactionStatus.utils";
 import ActiveTransactions from "../../organisms/active-transactions/ActiveTransactions";
 import TransactionsTable from "../../organisms/transactions-table/TransactionsTable";
 import { ModalCreateTransaction } from "../../templates/modal-create-transaction/ModalCreateTransaction";
@@ -23,6 +23,7 @@ import { ModalViewTransaction } from "../../templates/modal-view-transaction/Mod
 import { ModalEditTransaction } from "../../templates/modal-edit-transaction/ModalEditTransaction";
 import { getValues, TransactionStatus } from "../../../services/values.service";
 import { getTransactions } from "../../../services/transactions.service";
+import { showErrorToast } from "../../../utils/toast.utils";
 
 
 const TabsTransactions = () => {
@@ -160,6 +161,19 @@ const TabsTransactions = () => {
   };
 
   const handleEditTransaction = (transactionId: string) => {
+    // Buscar la transacción específica para verificar su estado
+    const transaction = transactions.find(t => t.id_transaction?.toString() === transactionId);
+    
+    if (transaction) {
+      const statusId = transaction.statusInfo?.id_status?.toString() || transaction.id_status?.toString() || '1';
+      
+      if (!canEditTransaction(statusId)) {
+        const statusName = getTransactionStatusName(statusId);
+        showErrorToast(`No se puede editar una transacción en estado "${statusName}"`);
+        return;
+      }
+    }
+    
     setSelectedTransactionId(transactionId);
     setOpenEditModal(true);
   };

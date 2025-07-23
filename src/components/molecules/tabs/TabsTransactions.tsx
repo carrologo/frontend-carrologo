@@ -37,6 +37,7 @@ const TabsTransactions = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [transactionStatuses, setTransactionStatuses] = useState<TransactionStatus[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]); // Todas las transacciones del filtro por estado
   const [loading, setLoading] = useState<boolean>(false);
   const [pagination, setPagination] = useState<{ page: number; total: number }>({ page: 1, total: 0 });
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 50 });
@@ -49,12 +50,63 @@ const TabsTransactions = () => {
     { value: "description", label: "Descripción" },
   ];
 
-  const fieldMap: Record<string, string> = {
-    buyerInfo: "buyer_name",
-    sellerInfo: "seller_name",
-    vehicleInfo: "vehicle_plate",
-    amount: "amount",
-    description: "description",
+  // Función para obtener el valor del campo correspondiente de una transacción
+  const getFieldValue = (transaction: Transaction, searchField: string): string => {
+    switch (searchField) {
+      case "buyerInfo":
+        return transaction.buyerInfo?.name || "";
+      case "sellerInfo":
+        return transaction.sellerInfo?.name || "";
+      case "vehicleInfo":
+        return transaction.vehicleInfo?.plate || "";
+      case "amount":
+        return transaction.amount?.toString() || "";
+      case "description":
+        return transaction.description || "";
+      default:
+        return "";
+    }
+  };
+
+  // Función reutilizable para obtener transacciones
+  const fetchTransactions = async (currentPage?: number, currentPageSize?: number) => {
+    setLoading(true);
+    const page = currentPage || paginationModel.page + 1;
+    const limit = currentPageSize || paginationModel.pageSize;
+
+    try {
+      let findBy: string | undefined;
+      let value: string | undefined;
+
+      // Solo aplicar filtro por estado en la llamada al API
+      if (statusFilter !== "all") {
+        findBy = "id_status";
+        value = statusFilter;
+      }
+
+      const response = await getTransactions(page, limit, findBy, value);
+      const fetchedTransactions = response.data || [];
+      setAllTransactions(fetchedTransactions);
+      
+      // Aplicar búsqueda por texto localmente
+      let filteredTransactions = fetchedTransactions;
+      if (searchTerm && searchField) {
+        filteredTransactions = fetchedTransactions.filter((transaction) => {
+          const fieldValue = getFieldValue(transaction, searchField);
+          return fieldValue.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+      }
+      
+      setTransactions(filteredTransactions);
+      setPagination(response.pagination || { page, total: 0 });
+    } catch (err) {
+      console.error("Error al obtener transacciones:", err);
+      setTransactions([]);
+      setAllTransactions([]);
+      setPagination({ page, total: 0 });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -70,44 +122,24 @@ const TabsTransactions = () => {
   }, []);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      const page = paginationModel.page + 1;
-      const limit = paginationModel.pageSize;
-
-      try {
-        let findBy: string | undefined;
-        let value: string | undefined;
-
-        // Prioridad al filtro de estado si está seleccionado
-        if (statusFilter !== "all") {
-          findBy = "id_status";
-          value = statusFilter;
-        } else if (searchTerm && searchField) {
-          // Si no hay filtro de estado pero sí búsqueda por texto
-          const mappedField = fieldMap[searchField] || searchField;
-          findBy = mappedField;
-          value = searchTerm;
-        }
-
-        const response = await getTransactions(
-          page,
-          limit,
-          findBy,
-          value
-        );
-        setTransactions(response.data || []);
-        setPagination(response.pagination || { page, total: 0 });
-      } catch (err) {
-        console.error("Error al obtener transacciones:", err);
-        setTransactions([]);
-        setPagination({ page, total: 0 });
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTransactions();
-  }, [paginationModel, searchTerm, searchField, statusFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paginationModel, statusFilter]);
+
+  // Efecto separado para manejar la búsqueda por texto localmente
+  useEffect(() => {
+    if (!searchTerm || !searchField) {
+      setTransactions(allTransactions);
+      return;
+    }
+
+    const filteredTransactions = allTransactions.filter((transaction) => {
+      const fieldValue = getFieldValue(transaction, searchField);
+      return fieldValue.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+    
+    setTransactions(filteredTransactions);
+  }, [searchTerm, searchField, allTransactions]);
 
   const handleChange = (newValue: string) => setValue(newValue);
 
@@ -119,40 +151,7 @@ const TabsTransactions = () => {
     // Recargar la página actual después de crear una transacción
     const page = paginationModel.page + 1;
     const limit = paginationModel.pageSize;
-
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        let findBy: string | undefined;
-        let value: string | undefined;
-
-        // Prioridad al filtro de estado si está seleccionado
-        if (statusFilter !== "all") {
-          findBy = "id_status";
-          value = statusFilter;
-        } else if (searchTerm && searchField) {
-          // Si no hay filtro de estado pero sí búsqueda por texto
-          const mappedField = fieldMap[searchField] || searchField;
-          findBy = mappedField;
-          value = searchTerm;
-        }
-
-        const response = await getTransactions(
-          page,
-          limit,
-          findBy,
-          value
-        );
-        setTransactions(response.data || []);
-        setPagination(response.pagination || { page, total: 0 });
-      } catch (err) {
-        console.error("Error al obtener transacciones:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
+    fetchTransactions(page, limit);
   };
 
   const handleViewTransaction = (transactionId: string) => {
@@ -195,40 +194,7 @@ const TabsTransactions = () => {
     // Recargar la página actual después de editar una transacción
     const page = paginationModel.page + 1;
     const limit = paginationModel.pageSize;
-
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        let findBy: string | undefined;
-        let value: string | undefined;
-
-        // Prioridad al filtro de estado si está seleccionado
-        if (statusFilter !== "all") {
-          findBy = "id_status";
-          value = statusFilter;
-        } else if (searchTerm && searchField) {
-          // Si no hay filtro de estado pero sí búsqueda por texto
-          const mappedField = fieldMap[searchField] || searchField;
-          findBy = mappedField;
-          value = searchTerm;
-        }
-
-        const response = await getTransactions(
-          page,
-          limit,
-          findBy,
-          value
-        );
-        setTransactions(response.data || []);
-        setPagination(response.pagination || { page, total: 0 });
-      } catch (err) {
-        console.error("Error al obtener transacciones:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
+    fetchTransactions(page, limit);
   };
 
   return (

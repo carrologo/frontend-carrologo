@@ -15,6 +15,7 @@ import {
 import { Add, Delete } from '@mui/icons-material';
 import { getValues } from '../../../services/values.service';
 import { VehicleDocument, DocumentManagerProps, TypeDocument } from '../../../interfaces/vehicles.interface';
+import { showWarningToast } from '../../../utils/toast.utils';
 
 // Re-exportar la interfaz para compatibilidad con código existente
 export type Document = VehicleDocument;
@@ -53,9 +54,15 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
       console.warn('No se pueden agregar documentos: tipos de documentos no cargados');
       return;
     }
-    
+    // Evitar duplicados de tipo de documento
+    const existingTypes = documents.map(doc => doc.document_type_id);
+    const firstAvailableType = typeDocuments.find(td => !existingTypes.includes(td.id));
+    if (!firstAvailableType) {
+      showWarningToast('Ya agregaste todos los tipos de documento disponibles.');
+      return;
+    }
     const newDocument: VehicleDocument = {
-      document_type_id: typeDocuments[0]?.id || 1,
+      document_type_id: firstAvailableType.id,
       expiration_date: '',
     };
     onChange([...documents, newDocument]);
@@ -140,7 +147,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
 
       {documents.map((document, index) => {
         const isExistingDocument = !!document.id;
-        
+        // Deshabilitar opciones ya usadas
+        const usedTypes = documents.map((doc, i) => i !== index ? doc.document_type_id : null).filter(Boolean);
         return (
         <Card key={index} sx={{ mb: 2, position: 'relative', 
           backgroundColor: isExistingDocument ? '#f8f9fa' : 'white',
@@ -180,7 +188,7 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   onChange={(e) => updateDocument(index, 'document_type_id', e.target.value)}
                 >
                   {typeDocuments.map((type) => (
-                    <MenuItem key={type.id} value={type.id}>
+                    <MenuItem key={type.id} value={type.id} disabled={usedTypes.includes(type.id)}>
                       {type.name}
                     </MenuItem>
                   ))}

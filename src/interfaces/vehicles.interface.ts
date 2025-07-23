@@ -1,12 +1,19 @@
 // Interfaz para las deudas de vehículo
 export interface Debt {
-  id: number;
+  id?: number; // Opcional para nuevas deudas
   amount: number;
-  created_at: string;
-  vehicle_id: number;
-  type_debt_id: number;
+  created_at?: string;
+  vehicle_id?: number;
+  typeDebtId: number;
+  type_debt_id: number; // Usar camelCase y obligatorio para el frontend
 }
-//import { Image } from "./commons.interface";
+
+// Interfaz específica para actualización de deudas
+export interface UpdateVehicleDebt {
+  id?: number; // Solo para deudas existentes
+  TypeDebtId: number;
+  amount: number;
+}
 
 export interface TypeDocument {
   id: number;

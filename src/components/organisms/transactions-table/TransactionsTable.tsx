@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Dialog, Chip, Button, Box, Menu, MenuItem } from '@mui/material';
 import { Transaction } from '../../../interfaces/transactions.interface';
-import { getTransactionStatusName, getTransactionStatusColor } from '../../../utils/transactionStatus.utils';
+import { getTransactionStatusName, getTransactionStatusColor, canEditTransaction } from '../../../utils/transactionStatus.utils';
 import IconButton from '@mui/material/IconButton';
 import ModeEditIcon from '@mui/icons-material/ModeEdit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -287,6 +287,16 @@ export default function TransactionsTable({
             aria-label="editar"
             color="secondary"
             onClick={() => handleEditTransaction(params.row)}
+            disabled={!canEditTransaction(
+              params.row.statusInfo?.id_status?.toString() || 
+              params.row.id_status?.toString() || 
+              '1'
+            )}
+            title={!canEditTransaction(
+              params.row.statusInfo?.id_status?.toString() || 
+              params.row.id_status?.toString() || 
+              '1'
+            ) ? "No se puede editar una transacción completada o cancelada" : "Editar transacción"}
           >
             <ModeEditIcon />
           </IconButton>

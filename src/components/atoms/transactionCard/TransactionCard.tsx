@@ -3,6 +3,7 @@ import React from "react";
 import {
   getTransactionStatusName,
   getTransactionStatusColor,
+  canEditTransaction,
 } from "../../../utils/transactionStatus.utils";
 import { Transaction } from "../../../interfaces/transactions.interface";
 import { Button } from "@mui/material";
@@ -25,9 +26,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
     transaction.id_status?.toString() ||
     "1";
   const statusName = getTransactionStatusName(statusId);
-  const statusColor = getTransactionStatusColor(
-    transaction.statusInfo?.id_status?.toString() || "1"
-  );
+  const statusColor = getTransactionStatusColor(statusId);
+  const canEdit = canEditTransaction(statusId);
 
   console.log("TransactionCard transaction:", transaction); // Debug
 
@@ -95,6 +95,8 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
             onClick={() =>
               onEditTransaction?.(transaction.id_transaction.toString())
             }
+            disabled={!canEdit}
+            title={!canEdit ? "No se puede editar una transacción completada o cancelada" : "Editar transacción"}
           >
             Editar
           </Button>

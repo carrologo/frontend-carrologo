@@ -21,3 +21,10 @@ export const getTransactionStatusColor = (statusId: string): string => {
     default: return "#757575"; // Gris para desconocido
   }
 };
+
+// Función para verificar si una transacción puede ser editada
+export const canEditTransaction = (statusId: string | number): boolean => {
+  const status = statusId.toString();
+  // No se puede editar si está Cancelado (3) o Completado (5)
+  return status !== "3" && status !== "5";
+};

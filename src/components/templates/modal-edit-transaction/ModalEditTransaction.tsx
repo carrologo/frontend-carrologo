@@ -10,11 +10,8 @@ import {
   TextField,
   Autocomplete,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { ClearIcon } from '@mui/x-date-pickers/icons';
 import { Formik, Form, Field } from 'formik';
@@ -57,6 +54,7 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
   const [loading, setLoading] = useState(false);
   const [initialValues, setInitialValues] = useState<UpdateTransactionPost | null>(null);
   const [transactionData, setTransactionData] = useState<Transaction | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     console.log('Valores totales de clientes:', clients.length);
@@ -88,7 +86,7 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
         id_vehicle: transaction.vehicleInfo?.id || null,
         amount: transaction.amount,
         description: transaction.description || '',
-        id_status: transaction.id_status || 1,
+        id_status: transaction.statusInfo?.id_status || transaction.id_status || 1,
       });
 
       // Los documentos no son editables, solo se muestran
@@ -129,6 +127,17 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
     setInitialValues(null);
     setTransactionData(null);
     onClose();
+  };
+
+  const handleViewImages = () => {
+    // Intentar obtener la URL de imágenes del vehículo
+    const vehicleImageUrl = (transactionData?.vehicleInfo as any)?.url_images;
+    if (vehicleImageUrl) {
+      window.open(vehicleImageUrl, "_blank");
+    } else {
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    }
   };
 
   // Helper functions para encontrar las opciones seleccionadas
@@ -298,28 +307,31 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                     />
 
                     {/* Estado */}
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputLabel>Estado</InputLabel>
-                      <Select
-                        value={values.id_status}
-                        label="Estado"
-                        onChange={(e: SelectChangeEvent<number>) => {
-                          setFieldValue('id_status', e.target.value);
-                        }}
-                        error={touched.id_status && !!errors.id_status}
-                      >
-                        {Object.entries(transactionStatusMap).map(([id, name]) => (
-                          <MenuItem key={id} value={parseInt(id)}>
-                            {name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {transactionData?.statusInfo && (
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, ml: 1 }}>
-                          Estado actual: {transactionData.statusInfo.name}
-                        </Typography>
-                      )}
-                    </FormControl>
+<Autocomplete
+  options={Object.entries(transactionStatusMap)
+    .filter(([id]) =>
+      !(String(values.id_status) !== "1" && id === "1")
+    )
+    .map(([id, name]) => ({ id, name }))}
+  getOptionLabel={(option) => option.name}
+  value={
+    Object.entries(transactionStatusMap)
+      .map(([id, name]) => ({ id, name }))
+      .find(option => option.id === String(values.id_status)) || null
+  }
+  onChange={(_, newValue) => {
+    setFieldValue('id_status', Number(newValue?.id) || values.id_status);
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Estado"
+      error={touched.id_status && !!errors.id_status}
+      helperText={touched.id_status && errors.id_status}
+    />
+  )}
+  sx={{ flex: 1 }}
+/>
                   </Box>
 
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2 }}>
@@ -356,20 +368,19 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
                         </Button>
                       </Box>
                     )}
-                                        {transactionData?.url_documents && (
+                    
+                    {/* Imágenes del Vehículo */}
+                    {transactionData?.vehicleInfo && (
                       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          Imagenes del Vehiculo:
+                          Imágenes del Vehículo:
                         </Typography>
                         <Button
-                          variant="outlined"
+                          variant="contained"
                           size="small"
-                          href={transactionData.url_documents}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          disabled={!transactionData.url_documents}
+                          onClick={handleViewImages}
                         >
-                          Ver Documento
+                          Ver Imágenes
                         </Button>
                       </Box>
                     )}
@@ -409,6 +420,30 @@ export const ModalEditTransaction: React.FC<ModalEditTransactionProps> = ({
           </Form>
         )}
       </Formik>
+
+      <Snackbar 
+        open={showAlert} 
+        autoHideDuration={3000} 
+        onClose={() => setShowAlert(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ 
+          position: 'fixed',
+          top: 80,
+          zIndex: 9999
+        }}
+      >
+        <Alert 
+          severity="warning" 
+          onClose={() => setShowAlert(false)}
+          sx={{
+            minWidth: 300,
+            fontSize: '1rem',
+            fontWeight: 'bold'
+          }}
+        >
+          No hay una URL de imágenes asignada a este vehículo.
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };

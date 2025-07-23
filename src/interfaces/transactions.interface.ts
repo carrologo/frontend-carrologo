@@ -28,6 +28,7 @@ export interface Transaction {
     id: number;
     description: string;
     plate: string | null;
+    url_images?: string;
   };
 }
 //import { Image } from "./commons.interface"

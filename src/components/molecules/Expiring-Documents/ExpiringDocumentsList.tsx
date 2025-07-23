@@ -34,7 +34,7 @@ const ExpiringDocumentsList = ({ expiringDocuments, loading }: ExpiringDocuments
 
       const vencenEnMenosDe30Dias = expiringDocuments
         .map((documento) => {
-          const vencimiento = new Date(documento.expiration_date);
+          const vencimiento = new Date(documento.expirationDate);
           vencimiento.setHours(0, 0, 0, 0);
 
           const msPorDia = 1000 * 60 * 60 * 24;
@@ -106,7 +106,7 @@ const ExpiringDocumentsList = ({ expiringDocuments, loading }: ExpiringDocuments
                   secondary={
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        📅 {new Date(documento.expiration_date).toLocaleDateString("es-ES")}
+                        📅 {new Date(documento.expirationDate).toLocaleDateString("es-ES")}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         🚗 {documento.vehicle?.plate || "Placa no Relacionada"}

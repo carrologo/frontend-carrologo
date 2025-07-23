@@ -172,7 +172,7 @@ const UrgentNotificationsModal: React.FC<UrgentNotificationsModalProps> = ({
             </Typography>
             <List dense>
               {urgentDocuments.map((document, index) => {
-                const daysUntil = getDaysUntil(document.expiration_date);
+                const daysUntil = getDaysUntil(document.expirationDate);
                 const isToday = daysUntil === 0;
                 const isTomorrow = daysUntil === 1;
                 const isExpired = daysUntil < 0;
@@ -190,7 +190,7 @@ const UrgentNotificationsModal: React.FC<UrgentNotificationsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary={document.buyer?.name || "Propietario no especificado"}
-                      secondary={`${document.documentType} - ${document.vehicle?.plate || "Sin placa"} - ${formatDate(document.expiration_date)} - ${timeText}`}
+                      secondary={`${document.documentType} - ${document.vehicle?.plate || "Sin placa"} - ${formatDate(document.expirationDate)} - ${timeText}`}
                     />
                   </ListItem>
                 );

@@ -65,7 +65,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
             {transaction.amount ? transaction.amount.toLocaleString() : "0"}
           </p>
           <p className="p-transactions">
-            <strong>Estado:</strong>{" "}
+            <strong>Estado de transación:</strong>{" "}
             <span style={{ color: statusColor, fontWeight: "bold" }}>
               {statusName}
             </span>

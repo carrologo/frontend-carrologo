@@ -138,11 +138,15 @@ export default function TransactionsTable({
       minWidth: 100,
       renderCell: (params) => {
         const statusInfo = params.row.statusInfo;
+        const statusId = statusInfo?.id_status?.toString() || params.row.id_status?.toString() || '1';
+        const statusName = getTransactionStatusName(statusId);
+        const statusColor = getTransactionStatusColor(statusId);
+        
         return (
           <Chip 
-            label={statusInfo ? statusInfo.name : getTransactionStatusName(params.value?.toString() || '1')} 
+            label={statusName} 
             style={{ 
-              backgroundColor: getTransactionStatusColor(params.value?.toString() || '1'), 
+              backgroundColor: statusColor, 
               color: 'white',
               fontWeight: 'bold'
             }}
@@ -258,9 +262,17 @@ export default function TransactionsTable({
             <p>
               <strong>Estado:</strong> 
               <Chip 
-                label={selectedTransaction.statusInfo ? selectedTransaction.statusInfo.name : getTransactionStatusName(selectedTransaction.id_status?.toString() || '1')} 
+                label={getTransactionStatusName(
+                  selectedTransaction.statusInfo?.id_status?.toString() || 
+                  selectedTransaction.id_status?.toString() || 
+                  '1'
+                )} 
                 style={{ 
-                  backgroundColor: getTransactionStatusColor(selectedTransaction.id_status?.toString() || '1'), 
+                  backgroundColor: getTransactionStatusColor(
+                    selectedTransaction.statusInfo?.id_status?.toString() || 
+                    selectedTransaction.id_status?.toString() || 
+                    '1'
+                  ), 
                   color: 'white',
                   fontWeight: 'bold',
                   marginLeft: '8px'

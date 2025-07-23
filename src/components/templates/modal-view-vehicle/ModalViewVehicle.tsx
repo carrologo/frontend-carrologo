@@ -33,6 +33,7 @@ const field1: FieldConfig[] = [
 const steps = [
   { title: "Información del Vehículo", fields: field1 },
   { title: "Documentos", fields: [] }, // Step personalizado para documentos
+  { title: "Deudas", fields: [] }, // Nuevo step para deudas
 ];
 
 const validationSchema = Yup.object({});
@@ -46,25 +47,33 @@ interface ModalViewVehicleProps {
 export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVehicleProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [typeDocuments, setTypeDocuments] = useState<TypeDocument[]>([]);
+  const [typeDebts, setTypeDebts] = useState<{id: number; name: string}[]>([]);
   const [showImageAlert, setShowImageAlert] = useState(false);
 
   // Cargar tipos de documentos
   useEffect(() => {
-    const fetchDocumentTypes = async () => {
+    const fetchTypes = async () => {
       try {
         const response = await getValues();
         setTypeDocuments(response.data.typeDocuments);
+        setTypeDebts(response.data.typeDebts);
       } catch (error) {
-        console.error('Error al cargar tipos de documentos:', error);
+        console.error('Error al cargar tipos de documentos o deudas:', error);
       }
     };
-    fetchDocumentTypes();
+    fetchTypes();
   }, []);
 
   // Función para obtener el nombre del tipo de documento
   const getDocumentTypeName = (document_type_id: number): string => {
     const docType = typeDocuments.find(type => type.id === document_type_id);
     return docType ? docType.name : `Documento tipo ${document_type_id}`;
+  };
+
+  // Función para obtener el nombre del tipo de deuda
+  const getDebtTypeName = (type_debt_id: number): string => {
+    const debtType = typeDebts.find(type => type.id === type_debt_id);
+    return debtType ? debtType.name : `Tipo deuda ${type_debt_id}`;
   };
 
   // Función para ver imágenes
@@ -133,7 +142,6 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
           <Description color="primary" />
           Documentos del Vehículo ({initialData.documents.length})
         </Typography>
-        
         {initialData.documents.map((document, index) => {
           const expirationDate = dayjs.utc(document.expiration_date);
           const today = dayjs();
@@ -182,7 +190,6 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
                       {getDocumentTypeName(document.document_type_id)}
                     </Typography>
                   </Box>
-                  
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       <CalendarToday sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'text-bottom' }} />
@@ -219,6 +226,65 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
     );
   };
 
+  // Componente para mostrar deudas
+  const DebtsView = () => {
+    if (!initialData.debts || initialData.debts.length === 0) {
+      return (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Description sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">
+            No hay deudas registradas para este vehículo
+          </Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Box>
+        <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Description color="primary" />
+          Deudas del Vehículo ({initialData.debts.length})
+        </Typography>
+        {initialData.debts.map((debt, index) => {
+          const createdDate = dayjs(debt.created_at);
+          return (
+            <Card
+              key={debt.id || index}
+              sx={{ mb: 2, border: '2px solid #ff9800', backgroundColor: '#fff3e0' }}
+            >
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Typography variant="h6" component="div">
+                    Deuda #{debt.id}
+                  </Typography>
+                  <Chip label={getDebtTypeName(debt.type_debt_id)} size="small" color="warning" />
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Fecha de Registro
+                    </Typography>
+                    <Typography variant="body1">
+                      {createdDate.format('DD/MM/YYYY HH:mm')}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Monto
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'warning.main' }}>
+                      $ {debt.amount.toLocaleString('es-CO')}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
+    );
+  };
+
   return (
     <MultiStepModal
       open={true}
@@ -244,7 +310,6 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
               No hay imágenes disponibles para este vehículo
             </Alert>
           )}
-          
           {/* Botón para ver imágenes */}
           <Box sx={{ mb: 3, textAlign: 'center' }}>
             <Button
@@ -257,7 +322,6 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
               Ver Imágenes del Vehículo
             </Button>
           </Box>
-
           <DynamicForm 
             fields={field1} 
             formik={formik}
@@ -267,6 +331,7 @@ export const ModalViewVehicle = ({ onClose, initialData, imageUrl }: ModalViewVe
         </Box>
       )}
       {currentStep === 1 && <DocumentsView />}
+      {currentStep === 2 && <DebtsView />}
     </MultiStepModal>
   );
 };

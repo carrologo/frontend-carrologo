@@ -1,5 +1,5 @@
-import  { useEffect, useState } from "react";
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import { useEffect, useState } from "react";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import {
   Card,
   CardHeader,
@@ -60,12 +60,14 @@ const BirthdateList = ({ upcomingBirthdays, loading }: BirthdateListProps) => {
   }, [upcomingBirthdays]);
 
   return (
-    <Card sx={{ 
-      height: { xs: 'auto', sm: '70vh', md: '75vh' },
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: { xs: '300px', sm: '400px' }
-    }}>
+    <Card
+      sx={{
+        height: { xs: "auto", sm: "70vh", md: "75vh" },
+        display: "flex",
+        flexDirection: "column",
+        minHeight: { xs: "300px", sm: "400px" },
+      }}
+    >
       <CardHeader
         avatar={<Cake sx={{ color: "#1e76e9ff" }} />}
         title={
@@ -74,29 +76,34 @@ const BirthdateList = ({ upcomingBirthdays, loading }: BirthdateListProps) => {
           </Typography>
         }
       />
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
           </Box>
         ) : clientesProximos.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 4 }}>
-            <CalendarToday sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
+            <CalendarToday
+              sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
+            />
             <Typography color="text.secondary">
               No hay cumpleaños próximos en los próximos 30 días.
             </Typography>
           </Box>
         ) : (
-          <List sx={{ 
-            maxHeight: { xs: '40vh', sm: '50vh', md: '60vh' }, 
-            overflow: "auto",
-            minHeight: { xs: '200px', sm: '250px', md: '300px' }
-          }}>
+          <List
+            sx={{
+              maxHeight: { xs: "40vh", sm: "50vh", md: "60vh" },
+              overflow: "auto",
+              minHeight: { xs: "200px", sm: "250px", md: "300px" },
+            }}
+          >
             {clientesProximos.map(({ cliente, diasFaltantes }) => (
               <ListItem
                 key={cliente.id}
                 sx={{
-                  background: "linear-gradient(135deg, rgba(241, 247, 255, 1) 0%, #e4f2ffff 100%)",
+                  background:
+                    "linear-gradient(135deg, rgba(241, 247, 255, 1) 0%, #e4f2ffff 100%)",
                   borderRadius: 2,
                   mb: 1,
                   border: "1px solid #0066ffff",
@@ -114,10 +121,10 @@ const BirthdateList = ({ upcomingBirthdays, loading }: BirthdateListProps) => {
                   secondary={
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        📅 {new Date(cliente.birthDate).toLocaleDateString("es-ES")}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        📧 {cliente.email}
+                        📅{" "}
+                        {new Date(cliente.birthDate).toLocaleDateString(
+                          "es-ES"
+                        )}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         📞 {cliente.contact}
@@ -127,9 +134,19 @@ const BirthdateList = ({ upcomingBirthdays, loading }: BirthdateListProps) => {
                           href={`https://api.whatsapp.com/send?phone=${cliente.contact}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: '#25D366', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.98em' }}
+                          style={{
+                            color: "#25D366",
+                            textDecoration: "none",
+                            fontWeight: 500,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "0.98em",
+                          }}
                         >
-                          <WhatsAppIcon sx={{ fontSize: 20, verticalAlign: 'middle' }} />
+                          <WhatsAppIcon
+                            sx={{ fontSize: 20, verticalAlign: "middle" }}
+                          />
                           Escribir al WhatsApp
                         </a>
                       </Box>

@@ -191,11 +191,6 @@ const handleUpdate = async (data: Record<string, unknown>) => {
   };
 
   const handleCustomSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
-    console.log("🔥 handleCustomSubmit ejecutado");
-    console.log("🔍 Evento:", e);
-    console.log("🔍 Formik isValid antes del submit:", formik.isValid);
-    console.log("🔍 Formik errors antes del submit:", formik.errors);
-    console.log("🔍 Formik values antes del submit:", formik.values);
     
     if (e) {
       e.preventDefault();

@@ -1,3 +1,11 @@
+// Interfaz para las deudas de vehículo
+export interface Debt {
+  id: number;
+  amount: number;
+  created_at: string;
+  vehicle_id: number;
+  type_debt_id: number;
+}
 //import { Image } from "./commons.interface";
 
 export interface TypeDocument {
@@ -45,6 +53,7 @@ export interface Vehicle {
   airbags: boolean;
   url_images: string;
   documents?: VehicleDocument[]; // Agregar documentos al vehículo
+  debts?: Debt[]; // Agregar deudas al vehículo
 }
 
 export interface VehiclesTableData {

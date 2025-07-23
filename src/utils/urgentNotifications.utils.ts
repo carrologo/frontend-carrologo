@@ -10,7 +10,7 @@ export const getUrgentBirthdays = (birthdays: UpcomingBirthday[]): UpcomingBirth
   return birthdays.filter(birthday => {
     const birthDate = new Date(birthday.birthDate);
     // Crear la fecha del cumpleaños en el año actual usando solo mes y día
-    const thisYearBirthday = new Date(
+    const thisYearBirthday = new Date(  
       today.getFullYear(),
       birthDate.getMonth(),
       birthDate.getDate()
@@ -41,7 +41,7 @@ export const getUrgentDocuments = (documents: ExpiringDocument[]): ExpiringDocum
   oneWeekFromNow.setDate(today.getDate() + 7);
 
   return documents.filter(document => {
-    const expirationDate = new Date(document.expiration_date);
+    const expirationDate = new Date(document.expirationDate);
     // Incluir documentos ya vencidos y los que vencen en los próximos 7 días
     return expirationDate <= oneWeekFromNow;
   });

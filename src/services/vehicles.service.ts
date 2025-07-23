@@ -43,9 +43,18 @@ export interface UpdateVehiclePost {
   debts?: UpdateVehicleDebt[];
 }
 
-export const getVehicles = async (page: number = 1, limit: number = 50): Promise<VehiclesTableData> => {
+export const getVehicles = async (
+  page: number = 1,
+  limit: number = 50,
+  findBy?: string,
+  value?: string
+): Promise<VehiclesTableData> => {
   try {
-    const response = await doGet<VehiclesTableData>(`/vehicles?page=${page}&limit=${limit}`, 'vehicle');
+    let url = `/vehicles?page=${page}&limit=${limit}`;
+    if (findBy && value) {
+      url += `&findBy=${encodeURIComponent(findBy)}&value=${encodeURIComponent(value)}`;
+    }
+    const response = await doGet<VehiclesTableData>(url, 'vehicle');
     return response.data;
   } catch (error) {
     showErrorToast(error, 'Error al cargar los vehículos');

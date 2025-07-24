@@ -60,8 +60,16 @@ interface ModalCreateClientProps {
 export const ModalCreateClient = ({ onClose, onClientCreated }: ModalCreateClientProps) => {
 
   const handleCreateClient = async (data: CreateClientPost) => {
+    // Sanitizar campos (quitar espacios)
+    const sanitizedData: CreateClientPost = {
+      ...data,
+      identification: data.identification?.replace(/\s+/g, ""),
+      email: data.email?.replace(/\s+/g, ""),
+      contact: data.contact?.replace(/\s+/g, ""),
+      birthdate: typeof data.birthdate === "string" ? data.birthdate.replace(/\s+/g, "") : data.birthdate,
+    };
     try {
-      await createClient(data);
+      await createClient(sanitizedData);
       onClientCreated();
     } catch (error) {
       console.error("Error al crear cliente:", error);

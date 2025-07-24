@@ -1,0 +1,20 @@
+.tab-panel-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-panel-box {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-panel-typography {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

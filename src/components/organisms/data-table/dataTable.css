@@ -1,10 +1,29 @@
 
-.datatable-container{
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 90vw;
-    padding: 0.1%;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.datatable-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.datatable-container .MuiDataGrid-columnHeader .MuiDataGrid-columnHeaderTitle {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Centrar solo los botones de las columnas de acciones */
+.datatable-container .MuiDataGrid-cell[data-field="edit"],
+.datatable-container .MuiDataGrid-cell[data-field="delete"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Centrar headers de las columnas de acciones */
+.datatable-container .MuiDataGrid-columnHeader[data-field="edit"],
+.datatable-container .MuiDataGrid-columnHeader[data-field="delete"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }

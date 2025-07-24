@@ -1,20 +1,25 @@
-import { Grid, Box } from "@mui/material";
+import { Grid, Box, CircularProgress } from "@mui/material";
 import CardVehicle from "../../molecules/card-vehicle/CardVehicle";
 import { Vehicle } from "../../../interfaces/vehicles.interface";
 import SimplePagination from "../../atoms/simple-pagination/SimplePagination";
+import './ActiveVehicles.css';
 
 interface ActiveVehiclesProps {
   vehicles: Vehicle[];
   pagination?: { page: number; total: number };
   paginationModel: { page: number; pageSize: number };
   onPaginationChange: (page: number, pageSize: number) => void;
+  onUpdateVehicles: (page?: number, limit?: number) => void;
+  loading?: boolean;
 }
 
 const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({ 
   vehicles, 
   pagination,
   paginationModel,
-  onPaginationChange 
+  onPaginationChange,
+  onUpdateVehicles,
+  loading = false
 }) => {
   
   const handlePageChange = (page: number) => {
@@ -26,10 +31,10 @@ const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({
   };
 
   return (
-    <Box>
+    <Box className="active-vehicles-container">
       {/* Paginador superior */}
       {pagination && (
-        <Box sx={{ mb: 2 }}>
+        <Box className="pagination-top">
           <SimplePagination
             currentPage={paginationModel.page + 1}
             totalItems={pagination.total}
@@ -41,21 +46,42 @@ const ActiveVehicles: React.FC<ActiveVehiclesProps> = ({
         </Box>
       )}
       
-      <Grid
-        container
-        spacing={{ xs: 2, md: 3 }}
-        columns={{ xs: 4, sm: 8, md: 20 }}
-      >
-        {vehicles.map((vehicle, index) => (
-          <Grid size={4} key={index}>
-            <CardVehicle vehicle={vehicle} />
+      {/* Área de contenido de cards */}
+      <Box className="cards-content-area">
+        {loading ? (
+          <Box 
+            display="flex" 
+            justifyContent="center" 
+            alignItems="center" 
+            minHeight="400px"
+          >
+            <CircularProgress size={60} />
+          </Box>
+        ) : vehicles.length > 0 ? (
+          <Grid
+            container
+            spacing={{ xs: 2, md: 3 }}
+            columns={{ xs: 4, sm: 8, md: 20 }}
+          >
+            {vehicles.map((vehicle, index) => (
+              <Grid key={index}>
+                <CardVehicle 
+                  vehicle={vehicle} 
+                  onVehicleUpdated={() => onUpdateVehicles(paginationModel.page + 1, paginationModel.pageSize)}
+                />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
+        ) : (
+          <Box className="no-vehicles-message">
+            No hay vehículos disponibles
+          </Box>
+        )}
+      </Box>
       
       {/* Paginador inferior */}
       {pagination && (
-        <Box sx={{ mt: 2 }}>
+        <Box className="pagination-bottom">
           <SimplePagination
             currentPage={paginationModel.page + 1}
             totalItems={pagination.total}

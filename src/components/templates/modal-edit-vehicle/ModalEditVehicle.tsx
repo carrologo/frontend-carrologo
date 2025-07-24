@@ -1,18 +1,29 @@
 import { FieldConfig } from "../../../interfaces/modal-form.interface";
+import { useEffect } from "react";
+import { getValues } from '../../../services/values.service';
+import { Debt, UpdateVehicleDebt } from '../../../interfaces/vehicles.interface';
+import { DebtManager } from '../../molecules/debt-manager/DebtManager';
 import * as Yup from "yup";
-import { updateVehicle } from "../../../services/vehicles.service";
-import { Image } from "../../../interfaces/commons.interface";
-import { CreateVehiclePost } from "../../../services/vehicles.service";
+import { updateVehicle, UpdateVehiclePost } from "../../../services/vehicles.service";
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+// Extender dayjs con el plugin UTC
+dayjs.extend(utc);
 import { useState } from "react";
 import { useFormik } from "formik";
 import MultiStepModal from "../../organisms/multi-step-modal/MultiStepModal";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
+import { VehicleDocument, UpdateVehicleDocument, Vehicle } from "../../../interfaces/vehicles.interface";
+import { showLoadingToast, updateToast } from "../../../utils/toast.utils";
+import { Box, Button, Alert } from '@mui/material';
+import { Image as ImageIcon } from '@mui/icons-material';
 
 const field1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
   { name: "line", label: "Linea", type: "text", required: true },
   { name: "type", label: "Tipo de Vehiculo", type: "text", required: true },
+  { name: "plate", label: "Placa", type: "text", required: true },
   { name: "version", label: "Versión", type: "text" },
   { name: "transmission", label: "Transmisión", type: "text" },
   { name: "traction", label: "Tipo de Traccion", type: "text" },
@@ -22,25 +33,27 @@ const field1: FieldConfig[] = [
   { name: "displacement", label: "Cilindrada", type: "number" },
   { name: "seatMaterial", label: "Material de Asientos", type: "text" },
   { name: "airbags", label: "Airbags", type: "boolean" },
-  { name: "images", label: "Subir Imagenes", type: "file", multiple: true,  },
 ];
 
 const field2: FieldConfig[] = [
-  { name: "soat", label: "SOAT", type: "date", views: ["year"], required: true },
-  { name: "technicalReview", label: "Revisión Técnica", type: "date", views: ["year"], required: true },
-  { name: "propertyCard", label: "Tarjeta de Propiedad", type: "date", required: true },
-  { name: "secure", label: "Seguro", type: "date", required: true },
+  { name: "documents", label: "Documentos del Vehículo", type: "documents", required: true },
+];
+
+const field3: FieldConfig[] = [
+  { name: "debts", label: "Deudas del Vehículo", type: "debts", required: false },
 ];
 
 const steps = [
   { title: "Información Básica", fields: field1 },
   { title: "Documentación", fields: field2 },
+  { title: "Deudas", fields: field3 },
 ];
 
 const validationSchema = Yup.object({
   brand: Yup.string().required("La marca es obligatoria"),
   line: Yup.string().required("La linea es obligatoria"),
   type: Yup.string().required("El tipo de vehiculo es obligatorio"),
+  plate: Yup.string().required("La placa es obligatoria"),
   version: Yup.string(),
   transmission: Yup.string(),
   traction: Yup.string(),
@@ -50,19 +63,21 @@ const validationSchema = Yup.object({
   displacement: Yup.number(),
   seatMaterial: Yup.string(),
   airbags: Yup.boolean(),
-  images: Yup.array(),
-
-  // Validaciones para los campos adicionales
-  soat: Yup.date().required("El SOAT es obligatorio"),
-  technicalReview: Yup.date().required("La revisión técnica es obligatoria"),
-  propertyCard: Yup.date().required("La tarjeta de propiedad es obligatoria"),
-  secure: Yup.date().required("El seguro es obligatorio"),
+  documents: Yup.array()
+    .of(
+      Yup.object({
+        document_type_id: Yup.number().required("El tipo de documento es obligatorio"),
+        expiration_date: Yup.string().required("La fecha de vencimiento es obligatoria"),
+      })
+    )
+    .min(1, "Debe agregar al menos un documento")
+    .required("Los documentos son obligatorios"),
 });
 
 interface ModalEditVehicleProps { 
   onClose: () => void;
   vehicleId: number;
-  initialData: CreateVehiclePost;
+  initialData: Vehicle; // Usar la interfaz Vehicle que coincide con el GET
   onVehicleEdited: () => void;
   imageUrl?: string;
 }
@@ -75,15 +90,65 @@ export const ModalEditVehicle = ({
   imageUrl,
 }: ModalEditVehicleProps) => {
 
+  // Parsear initialData para adaptarlo al formato esperado por el formulario
 const parsedInitialData = {
-  ...initialData,
-  fuelType: initialData.fuel_type,
-  seatMaterial: initialData.seat_material,
+  type: initialData.type,
+  brand: initialData.brand,
+  line: initialData.line,
+  plate: initialData.plate,
+  version: initialData.version || '',
+  transmission: initialData.transmission || '',
+  traction: initialData.traction || '',
+  fuelType: initialData.fuel_type, // Mapear del campo que llega del backend
+  kms: initialData.kms,
   model: dayjs(initialData.model),
+  displacement: initialData.displacement || 0,
+  seatMaterial: initialData.seat_material || '', // Mapear del campo que llega del backend
+  airbags: initialData.airbags || false,
+  documents: initialData.documents?.map(doc => {
+    const formattedDate = doc.expiration_date ? dayjs.utc(doc.expiration_date).format('YYYY-MM-DD') : '';
+    return {
+      document_type_id: doc.document_type_id,
+      expiration_date: formattedDate,
+      id: doc.id, // Conservar el ID para updates
+      category: doc.category, // Conservar categoría si existe
+      idVehicle: doc.idVehicle // Conservar relación con vehículo
+    };
+  }) || [], // Formatear fechas de documentos existentes
+  debts: initialData.debts?.map(debt => ({
+    id: debt.id,
+    amount: debt.amount,
+    typeDebtId: typeof debt.typeDebtId === 'number' ? debt.typeDebtId : (typeof debt.type_debt_id === 'number' ? debt.type_debt_id : 1),
+  })) || [],
 };
 
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [showImageAlert, setShowImageAlert] = useState(false);
+  const [typeDebtsOptions, setTypeDebtsOptions] = useState<{ value: number; label: string }[]>([]);
+  // Cargar tipos de deudas para el DebtManager
+  useEffect(() => {
+    const fetchTypeDebts = async () => {
+      try {
+        const response = await getValues();
+        const options = response.data.typeDebts.map((td: { id: number; name: string }) => ({ value: td.id, label: td.name }));
+        setTypeDebtsOptions(options);
+      } catch (error) {
+        console.error('Error al cargar tipos de deudas:', error);
+      }
+    };
+    fetchTypeDebts();
+  }, []);
+
+  // Función para ver imágenes
+  const handleViewImages = () => {
+    if (imageUrl && imageUrl.trim() !== '') {
+      window.open(imageUrl, "_blank");
+    } else {
+      setShowImageAlert(true);
+      setTimeout(() => setShowImageAlert(false), 3000);
+    }
+  };
   const formik = useFormik({
     initialValues: parsedInitialData,
     validationSchema: validationSchema,
@@ -92,34 +157,72 @@ const parsedInitialData = {
     },
   });
 
-const handleUpdate = async (data: Record<string, any>) => {
+  // Restricción para el paso de documentos (debe ir después de formik)
+  const hasDocuments = Array.isArray(formik.values.documents) && formik.values.documents.length > 0;
+
+const handleUpdate = async (data: Record<string, unknown>) => {
+  console.log("🔥 handleUpdate INICIADO con datos:", data);
+  const toastId = showLoadingToast("Actualizando vehículo...");
   try {
-    const transformedData: CreateVehiclePost = {
-      ...data,
-      model: dayjs(data.model).toISOString(),
-      soat: dayjs(data.soat).toISOString(),
-      technicalReview: dayjs(data.technicalReview).toISOString(),
-      propertyCard: dayjs(data.propertyCard).toISOString(),
-      secure: dayjs(data.secure).toISOString(),
-      fuel_type: data.fuelType,
-      seat_material: data.seatMaterial,
-      images: data.images.map((image: Image) => ({
-        ...image,
-        base64: image.base64.replace(/^data:image\/[a-z]+;base64,/, ""),
-      })),
+    const allDocuments = data.documents as VehicleDocument[] || [];
+    const allDebts = data.debts as Debt[] || [];
+
+    // Transformar TODOS los documentos válidos (existentes y nuevos)
+    const transformedDocuments = allDocuments
+      .filter(doc => doc.document_type_id && doc.expiration_date)
+      .map(doc => ({
+        ...(doc.id && { id: doc.id }),
+        document_type_id: doc.document_type_id,
+        expiration_date: doc.expiration_date,
+        idVehicle: vehicleId
+      }));
+
+    // Transformar deudas para el update (compatibilidad con backend)
+    const transformedDebts = allDebts
+      .filter(debt => typeof debt.typeDebtId === 'number' && debt.amount)
+      .map(debt => ({
+        ...(debt.id && { id: debt.id }),
+        TypeDebtId: debt.typeDebtId,
+        amount: debt.amount
+      }));
+
+    // Sanitizar campos (quitar espacios)
+    const transformedData: UpdateVehiclePost = {
+      type: data.type as string,
+      brand: data.brand as string,
+      line: data.line as string,
+      plate: String(data.plate).replace(/\s+/g, "").toUpperCase(),
+      version: (data.version as string)?.replace(/\s+/g, ""),
+      transmission: (data.transmission as string)?.replace(/\s+/g, ""),
+      traction: (data.traction as string)?.replace(/\s+/g, ""),
+      fuelType: (data.fuelType as string)?.replace(/\s+/g, ""),
+      kms: Number(String(data.kms).replace(/\s+/g, "")),
+      model: dayjs(data.model as string).toISOString(),
+      displacement: Number(String(data.displacement).replace(/\s+/g, "")),
+      seatMaterial: data.seatMaterial as string,
+      airbags: data.airbags as boolean,
+      documents: transformedDocuments as UpdateVehicleDocument[],
+      debts: transformedDebts as UpdateVehicleDebt[],
     };
+
     await updateVehicle(vehicleId, transformedData);
+    updateToast(toastId, "¡Vehículo actualizado exitosamente!", "success");
     onVehicleEdited();
+    onClose();
   } catch (error) {
-    console.error("Error al actualizar vehículo:", error);
+    console.error("❌ Error al actualizar vehículo:", error);
+    updateToast(toastId, "Error al actualizar el vehículo", "error");
   }
 };
 
 
-
-  console.log("Parsed Initial Data:", parsedInitialData);
   
     const handleNext = () => {
+    // Si estamos en el paso de documentos (step 1), solo permitir avanzar si hay al menos un documento
+    if (currentStep === 1 && !hasDocuments) {
+      formik.setFieldTouched('documents', true);
+      return;
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -129,6 +232,15 @@ const handleUpdate = async (data: Record<string, any>) => {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     }
+  };
+
+  const handleCustomSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    
+    if (e) {
+      e.preventDefault();
+    }
+    
+    formik.handleSubmit(e);
   };
 
   return (
@@ -141,20 +253,58 @@ const handleUpdate = async (data: Record<string, any>) => {
       currentStep={currentStep}
       onNext={handleNext}
       onPrevious={handlePrevious}
-      onSubmit={formik.handleSubmit}
+      onSubmit={handleCustomSubmit}
       isSubmitting={formik.isSubmitting}
-      canProceed={true}
+      canProceed={currentStep !== 1 ? true : hasDocuments}
+      submitButtonText="Actualizar Vehículo"
+      submittingText="Actualizando..."
     >
       {/* Renderiza los campos del paso actual */}
       {steps.map((step, index) => (
-    <DynamicForm 
-      key={index} 
-      fields={step.fields} 
-      formik={formik}
-      isEditMode={true}
-      imageUrl={imageUrl}
-    />
-  ))}
+        <Box key={index}>
+          {/* Mostrar botón de imágenes solo en el primer step */}
+          {index === 0 && currentStep === 0 && (
+            <Box>
+              {/* Alerta para imágenes no disponibles */}
+              {showImageAlert && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  No hay imágenes disponibles para este vehículo
+                </Alert>
+              )}
+              
+              {/* Botón para ver imágenes */}
+              <Box sx={{ mb: 3, textAlign: 'center' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleViewImages}
+                  startIcon={<ImageIcon />}
+                  sx={{ mb: 2 }}
+                >
+                  Ver Imágenes del Vehículo
+                </Button>
+              </Box>
+            </Box>
+          )}
+          
+          {/* Renderizar DebtManager en el paso de deudas */}
+          {step.fields[0]?.name === 'debts' ? (
+            <DebtManager
+              debts={formik.values.debts || []}
+              onChange={debts => formik.setFieldValue('debts', debts)}
+              error={formik.touched.debts && formik.errors.debts ? String(formik.errors.debts) : undefined}
+              typeDebtsOptions={typeDebtsOptions}
+            />
+          ) : (
+            <DynamicForm 
+              fields={step.fields} 
+              formik={formik}
+              isEditMode={true}
+              imageUrl={imageUrl}
+            />
+          )}
+        </Box>
+      ))}
     </MultiStepModal>
   );
 };

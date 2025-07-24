@@ -7,13 +7,18 @@ import {
   CreateVehiclePost,
 } from "../../../services/vehicles.service";
 import { Image } from "../../../interfaces/commons.interface";
+// Imagen por defecto en base64 (miniatura PNG 1x1 transparente, reemplaza por tu base64 real si lo deseas)
+const DEFAULT_IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AAn8B9pQn2wAAAABJRU5ErkJggg==";
+const DEFAULT_IMAGE_NAME = "image-not-found.png";
 import { useFormik } from "formik";
 import DynamicForm from "../../molecules/dynamicform/DynamicForm";
+import { VehicleDocument } from "../../../interfaces/vehicles.interface";
 
 const fields1: FieldConfig[] = [
   { name: "brand", label: "Marca", type: "text", required: true },
   { name: "line", label: "Linea", type: "text", required: true },
   { name: "type", label: "Tipo de Vehiculo", type: "text", required: true },
+  { name: "plate", label: "Placa", type: "text", required: true },
   { name: "version", label: "Versión", type: "text" },
   { name: "transmission", label: "Transmisión", type: "text" },
   { name: "traction", label: "Tipo de Traccion", type: "text" },
@@ -37,39 +42,30 @@ const fields1: FieldConfig[] = [
   { name: "images", label: "Subir Imagenes", type: "file", multiple: true },
 ];
 
+// Este array debe ser llenado dinámicamente con las opciones de typeDebts desde values
+const typeDebtsOptions = [
+  { value: 1, label: "Multas" },
+  { value: 2, label: "Impuestos" },
+];
+
 const fields2: FieldConfig[] = [
-  {
-    name: "soat",
-    label: "SOAT",
-    type: "date",
-    views: ["year"],
-    required: true,
-  },
-  {
-    name: "technicalReview",
-    label: "Revisión Técnica",
-    type: "date",
-    views: ["year"],
-    required: true,
-  },
-  {
-    name: "propertyCard",
-    label: "Tarjeta de Propiedad",
-    type: "date",
-    required: true,
-  },
-  { name: "secure", label: "Seguro", type: "date", required: true },
+  { name: "documents", label: "Documentos del Vehículo", type: "documents", required: true },
+];
+const fields3: FieldConfig[] = [
+  { name: "debts", label: "Deudas del Vehículo", type: "debts", required: false, options: typeDebtsOptions },
 ];
 
 const steps = [
   { title: "Información Básica", fields: fields1 },
   { title: "Documentación", fields: fields2 },
+  { title: "Deudas", fields: fields3 },
 ];
 
 const validationSchema = Yup.object({
   brand: Yup.string().required("La marca es obligatoria"),
   line: Yup.string().required("La linea es obligatoria"),
   type: Yup.string().required("El tipo de vehiculo es obligatorio"),
+  plate: Yup.string().required("La placa es obligatoria"),
   version: Yup.string(),
   transmission: Yup.string(),
   traction: Yup.string(),
@@ -82,18 +78,29 @@ const validationSchema = Yup.object({
   seatMaterial: Yup.string(),
   airbags: Yup.boolean(),
   images: Yup.array(),
-
-  // Validaciones para los campos adicionales
-  soat: Yup.date().required("El SOAT es obligatorio"),
-  technicalReview: Yup.date().required("La revisión técnica es obligatoria"),
-  propertyCard: Yup.date().required("La tarjeta de propiedad es obligatoria"),
-  secure: Yup.date().required("El seguro es obligatorio"),
+  documents: Yup.array()
+    .of(
+      Yup.object({
+        document_type_id: Yup.number().required("El tipo de documento es obligatorio"),
+        expiration_date: Yup.string().required("La fecha de vencimiento es obligatoria"),
+      })
+    )
+    .min(1, "Debe agregar al menos un documento")
+    .required("Los documentos son obligatorios"),
+  debts: Yup.array()
+    .of(
+      Yup.object({
+        amount: Yup.number().typeError("El valor debe ser un número").min(0, "El valor debe ser mayor o igual a 0").required("El valor es obligatorio"),
+        typeDebtId: Yup.number().required("El tipo de deuda es obligatorio"),
+      })
+    ),
 });
 
 const initialValues = {
   brand: "",
   line: "",
   type: "",
+  plate: "",
   version: "",
   transmission: "",
   traction: "",
@@ -104,10 +111,8 @@ const initialValues = {
   seatMaterial: "",
   airbags: false,
   images: [],
-  soat: "",
-  technicalReview: "",
-  propertyCard: "",
-  technicalSheet: "",
+  documents: [],
+  debts: [],
 };
 
 interface ModalCreateVehicleProps {
@@ -120,23 +125,53 @@ export const ModalCreateVehicle = ({
   onVehicleCreated,
 }: ModalCreateVehicleProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
   const formik = useFormik({
     initialValues,
     validationSchema,
-    onSubmit: async (data: any) => {
+    onSubmit: async (data: Record<string, unknown>) => {
       try {
+        let images = (data.images as Image[])?.map((image: Image) => ({
+          ...image,
+          base64: image.base64?.replace(/^data:image\/[a-z]+;base64,/, ""),
+        })) || [];
+        if (!images || images.length === 0) {
+          images = [{
+            name: DEFAULT_IMAGE_NAME,
+            base64: DEFAULT_IMAGE_BASE64,
+          }];
+        }
+        // Sanitizar campos (quitar espacios)
         const transformedData: CreateVehiclePost = {
-          ...data,
-          model: new Date(data.model),
-          soatDate: new Date(data.soat),
-          technicalReviewDate: new Date(data.technicalReview),
-          images:
-            data.images?.map((image: Image) => ({
-              ...image,
-              base64: image.base64?.replace(/^data:image\/[a-z]+;base64,/, ""),
-            })) || [],
+          type: data.type as string, // NO sanitizar
+          brand: data.brand as string, // NO sanitizar
+          line: data.line as string, // NO sanitizar
+          plate: String(data.plate).replace(/\s+/g, "").toUpperCase(),
+          version: (data.version as string)?.replace(/\s+/g, ""),
+          transmission: (data.transmission as string)?.replace(/\s+/g, ""),
+          traction: (data.traction as string)?.replace(/\s+/g, ""),
+          fuelType: (data.fuelType as string)?.replace(/\s+/g, ""),
+          kms: data.kms as number,
+          model: new Date(data.model as string).toISOString(), // NO sanitizar
+          displacement: Number(String(data.displacement).replace(/\s+/g, "")),
+          seatMaterial: data.seatMaterial as string, // NO sanitizar
+          airbags: data.airbags as boolean,
+          documents: data.documents as VehicleDocument[] || [],
+          images,
+          debts: (data.debts as any[])?.map((debt) => ({
+            amount: Number(String(debt.amount).replace(/\s+/g, "")),
+            typeDebtId: Number(String(debt.typeDebtId).replace(/\s+/g, "")),
+          })) || [],
         };
-        await createVehicle(transformedData);
+        // Transformar debts a TypeDebtId para el backend
+        const backendData = {
+          ...transformedData,
+          debts: (transformedData.debts || []).map(({ amount, typeDebtId }) => ({
+            amount,
+            TypeDebtId: typeDebtId,
+          })),
+        };
+        await createVehicle(backendData as any);
         onVehicleCreated();
         onClose();
       } catch (err) {
@@ -147,21 +182,33 @@ export const ModalCreateVehicle = ({
 
   // Función para determinar si se puede proceder al siguiente paso
   const canProceedToNext = useMemo(() => {
+    // Si estamos en el paso de documentos y está cargando, no permitir avanzar
+    if (currentStep === 1 && documentsLoading) {
+      return false;
+    }
+
     const currentStepFields = steps[currentStep].fields;
     const requiredFields = currentStepFields.filter((field) => field.required);
 
     return requiredFields.every((field) => {
-      const fieldValue = (formik.values as Record<string, unknown>)[field.name];
+      const fieldValue = (formik.values as Record<string, unknown>)[field.name];        // Para campos numéricos, permitir el valor 0
+        if (field.type === "number") {
+          return (
+            fieldValue !== null &&
+            fieldValue !== undefined &&
+            fieldValue !== "" &&
+            !(formik.errors as Record<string, unknown>)[field.name]
+          );
+        }
 
-      // Para campos numéricos, permitir el valor 0
-      if (field.type === "number") {
-        return (
-          fieldValue !== null &&
-          fieldValue !== undefined &&
-          fieldValue !== "" &&
-          !(formik.errors as Record<string, unknown>)[field.name]
-        );
-      }
+        // Para campos de documentos, verificar que tenga al menos uno
+        if (field.type === "documents") {
+          return (
+            Array.isArray(fieldValue) &&
+            fieldValue.length > 0 &&
+            !(formik.errors as Record<string, unknown>)[field.name]
+          );
+        }
 
       // Para otros tipos de campos
       return (
@@ -171,7 +218,7 @@ export const ModalCreateVehicle = ({
         !(formik.errors as Record<string, unknown>)[field.name]
       );
     });
-  }, [currentStep, formik.values, formik.errors]);
+  }, [currentStep, formik.values, formik.errors, documentsLoading]);
 
   const handleNext = async () => {
     if (currentStep < steps.length - 1) {
@@ -205,6 +252,15 @@ export const ModalCreateVehicle = ({
             fieldValue === null ||
             fieldValue === undefined ||
             fieldValue === "" ||
+            (errors as Record<string, unknown>)[field.name]
+          );
+        }
+
+        // Para campos de documentos, verificar que tenga al menos uno
+        if (field.type === "documents") {
+          return (
+            !Array.isArray(fieldValue) ||
+            fieldValue.length === 0 ||
             (errors as Record<string, unknown>)[field.name]
           );
         }
@@ -250,6 +306,7 @@ export const ModalCreateVehicle = ({
           key={`step-${step.title}-${index}`}
           fields={step.fields}
           formik={formik}
+          onDocumentsLoadingChange={setDocumentsLoading}
         />
       ))}
     </MultiStepModal>

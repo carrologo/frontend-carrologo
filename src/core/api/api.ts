@@ -14,13 +14,16 @@ interface ApiError {
 }
 
 // Tipo para el parámetro apiType
-type ApiType = 'client' | 'vehicle' | 'auth';
+type ApiType = 'client' | 'vehicle' | 'auth' | 'notifications' | 'transactions' | 'values';
 
 // Mapeo de apiType a la variable de entorno correspondiente
 const baseUrlMap: Record<ApiType, string> = {
   client: import.meta.env.VITE_CLIENT_BASE_URL as string,
   vehicle: import.meta.env.VITE_VEHICLE_BASE_URL as string,
   auth: import.meta.env.VITE_AUTH_BASE_URL as string,
+  notifications: import.meta.env.VITE_NOTIFICATIONS_BASE_URL as string,
+  transactions: import.meta.env.VITE_TRANSACTIONS_BASE_URL as string,
+  values: import.meta.env.VITE_VALUES_BASE_URL as string,
 };
 
 // Token management
@@ -62,7 +65,9 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Solo redirigir si es un 401 Y ya tenemos un token (es decir, el token expiró)
+    // No redirigir en el login cuando las credenciales son incorrectas
+    if (error.response?.status === 401 && getToken()) {
       removeToken();
       window.location.href = '/';
     }
@@ -91,7 +96,18 @@ export const doPost = async <T, D>(
       statusText: response.statusText,
     };
   } catch (error) {
-    const axiosError = error as { response: { data: ApiError } };
+    console.error('=== ERROR EN doPost ===');
+    console.error('URL:', resource);
+    console.error('Data enviada:', data);
+    console.error('Error completo:', error);
+    
+    const axiosError = error as { response: { data: ApiError; status: number } };
+    
+    if (axiosError.response) {
+      console.error('Status:', axiosError.response.status);
+      console.error('Data de error:', axiosError.response.data);
+    }
+    
     throw new Error(
       axiosError.response?.data?.message || 'Error performing POST request'
     );
@@ -149,6 +165,34 @@ export const doPatch = async <T, D>(
     const axiosError = error as { response: { data: ApiError } };
     throw new Error(
       axiosError.response?.data?.message || 'Error performing PATCH request'
+    );
+  }
+};
+
+// Generic doPut function
+export const doPut = async <T, D>(
+  resource: string,
+  data: D,
+  apiType: ApiType
+): Promise<ApiResponse<T>> => {
+  try {
+    const baseUrl = baseUrlMap[apiType];
+    if (!baseUrl) {
+      throw new Error(`No base URL defined for apiType: ${apiType}`);
+    }
+    const url = resource.startsWith('/')
+      ? `${baseUrl}${resource}`
+      : `${baseUrl}/${resource}`;
+    const response: ApiResponse<T> = await axios.put(url, data);
+    return {
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+    };
+  } catch (error) {
+    const axiosError = error as { response: { data: ApiError } };
+    throw new Error(
+      axiosError.response?.data?.message || 'Error performing PUT request'
     );
   }
 };

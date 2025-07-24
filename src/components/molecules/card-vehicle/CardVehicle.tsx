@@ -14,12 +14,14 @@ import { ModalEditVehicle } from "../../templates/modal-edit-vehicle/ModalEditVe
 import { ModalViewVehicle } from "../../templates/modal-view-vehicle/ModalViewVehicle";
 import ModeEditIcon from "@mui/icons-material/ModeEdit";
 import { DirectionsCar } from "@mui/icons-material";
+import './CardVehicle.css';
 
 interface CardVehicleProps {
   vehicle: Vehicle;
+  onVehicleUpdated?: () => void;
 }
 
-const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
+const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle, onVehicleUpdated }) => {
   const [openView, setOpenView] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -30,6 +32,13 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
 
   const handleOpenEdit = () => setOpenEdit(true);
   const handleCloseEdit = () => setOpenEdit(false);
+
+  const handleVehicleEdited = () => {
+    handleCloseEdit();
+    if (onVehicleUpdated) {
+      onVehicleUpdated();
+    }
+  };
 
   const handleViewImages = () => {
     if (url) {
@@ -50,6 +59,9 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
         />
         <CardContent>
           <p>
+            <strong>Placa:</strong> {vehicle.plate}
+          </p>
+          <p>
             <strong>Cilindraje:</strong> {vehicle.displacement} cc
           </p>
           <p>
@@ -62,14 +74,19 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
             <strong>Tipo de Combustible :</strong> {vehicle.fuel_type}
           </p>
         </CardContent>
-        <CardActions>
-          <Button size="small" onClick={handleOpenView}>
+        <CardActions className="card-vehicle-actions">
+          <Button 
+            size="small" 
+            onClick={handleOpenView}
+            className="card-vehicle-button"
+          >
             Ver detalles
           </Button>
           <Button
             size="small"
             onClick={handleOpenEdit}
             startIcon={<ModeEditIcon />}
+            className="card-vehicle-button"
           >
             Editar
           </Button>
@@ -77,6 +94,7 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
             size="small"
             onClick={handleViewImages}
             variant="contained"
+            className="card-vehicle-button"
           >
             Ver imagenes
           </Button>
@@ -86,7 +104,8 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
       <Dialog open={openView} onClose={handleCloseView} maxWidth="md" fullWidth>
         <ModalViewVehicle
           onClose={handleCloseView}
-          initialValues={vehicle}
+          initialData={vehicle} // Cambiar de initialValues a initialData
+          imageUrl={vehicle.url_images}
         />
       </Dialog>
 
@@ -94,24 +113,32 @@ const CardVehicle: React.FC<CardVehicleProps> = ({ vehicle }) => {
         <ModalEditVehicle
           onClose={handleCloseEdit}
           vehicleId={vehicle.id}
-          initialData={{
-            ...vehicle,
-            images: vehicle.url_images
-              ? [
-                  {
-                    base64: vehicle.url_images,
-                    name: "imagen-vehiculo.jpg",
-                  },
-                ]
-              : [],
-          }}
-          onVehicleEdited={handleCloseEdit}
+          initialData={vehicle}
+          onVehicleEdited={handleVehicleEdited}
           imageUrl={vehicle.url_images}
         />
       </Dialog>
-        <Snackbar open={showAlert} autoHideDuration={3000} onClose={() => setShowAlert(false)}>
-        <Alert severity="warning" onClose={() => setShowAlert(false)}>
-          No hay una URL asignada a este vehículo .
+        <Snackbar 
+          open={showAlert} 
+          autoHideDuration={3000} 
+          onClose={() => setShowAlert(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{ 
+            position: 'fixed',
+            top: 80,
+            zIndex: 9999
+          }}
+        >
+        <Alert 
+          severity="warning" 
+          onClose={() => setShowAlert(false)}
+          sx={{
+            minWidth: 300,
+            fontSize: '1rem',
+            fontWeight: 'bold'
+          }}
+        >
+          No hay una URL asignada a este vehículo.
         </Alert>
       </Snackbar>
     </>

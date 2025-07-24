@@ -1,0 +1,68 @@
+.active-vehicles-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px); /* Ajustar según el header y otros elementos */
+  min-height: 500px;
+}
+
+.pagination-top {
+  flex-shrink: 0;
+  padding-bottom: 16px;
+}
+
+.cards-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 0;
+  min-height: 300px;
+}
+
+.pagination-bottom {
+  flex-shrink: 0;
+  padding-top: 32px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .active-vehicles-container {
+    height: calc(100vh - 180px);
+    min-height: 400px;
+  }
+  
+  .cards-content-area {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .active-vehicles-container {
+    height: calc(100vh - 160px);
+    min-height: 350px;
+  }
+  
+  .pagination-top,
+  .pagination-bottom {
+    padding: 12px 0;
+  }
+  
+  .pagination-bottom {
+    padding-top: 24px;
+  }
+  
+  .cards-content-area {
+    min-height: 150px;
+  }
+}
+
+/* Cuando no hay cards, asegurar que los paginadores mantengan posición */
+.no-vehicles-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: #666;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-align: center;
+}

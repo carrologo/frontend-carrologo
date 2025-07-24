@@ -1,0 +1,44 @@
+.active-transactions-container {
+  padding: 20px;
+  min-height: calc(100vh - 250px);
+  display: flex;
+  flex-direction: column;
+}
+
+.pagination-top {
+  margin-bottom: 20px;
+}
+
+.pagination-bottom {
+  margin-top: 20px;
+}
+
+.cards-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 16px;
+}
+
+.no-transactions-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  font-size: 18px;
+  color: #666;
+  text-align: center;
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .active-transactions-container {
+    padding: 10px;
+  }
+  
+  .pagination-top,
+  .pagination-bottom {
+    margin: 10px 0;
+  }
+}

@@ -27,6 +27,8 @@ interface MultiStepModalProps {
   isSubmitting?: boolean;
   canProceed?: boolean;
   initialValues: FormikValues;
+  submitButtonText?: string;
+  submittingText?: string;
 }
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
@@ -59,6 +61,8 @@ const MultiStepModal: React.FC<MultiStepModalProps> = ({
   onSubmit,
   isSubmitting = false,
   canProceed = true,
+  submitButtonText = "Crear Vehículo",
+  submittingText = "Creando...",
 }) => {
   const isLastStep = currentStep === steps.length - 1;
   const isFirstStep = currentStep === 0;
@@ -123,7 +127,7 @@ const MultiStepModal: React.FC<MultiStepModalProps> = ({
                 onClick={onSubmit}
                 disabled={!canProceed || isSubmitting}
               >
-                {isSubmitting ? "Creando..." : "Crear Vehículo"}
+                {isSubmitting ? submittingText : submitButtonText}
               </Button>
             ) : (
               <Button

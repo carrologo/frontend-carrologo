@@ -5,9 +5,10 @@ import { TabPanel } from "../../atoms/tabPanel/TabPanel";
 import GridViewIcon from "@mui/icons-material/GridView";
 import ListIcon from "@mui/icons-material/List";
 import ActiveVehicles from "../../organisms/active-vehicles/ActiveVehicles";
-import { Vehicle } from "../../../interfaces/vehicles.interface";
+import { VehiclesTableData } from "../../../interfaces/vehicles.interface";
 import VehicleTable from "../../organisms/vehicle-table/VehicleTable";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { getVehicles } from "../../../services/vehicles.service";
 import {
   Button,
   Dialog,
@@ -19,75 +20,92 @@ import {
 } from "@mui/material";
 import { ModalCreateVehicle } from "../../templates/modal-create-vehicle/ModalCreateVehicle";
 
-interface TabsVehiclesProps {
-  dataVehicles: Vehicle[];
-  onUpdateVehicles: (page?: number, limit?: number) => void;
-  pagination?: { page: number; total: number };
-}
-const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehiclesProps) => {
+
+const TabsVehicles = () => {
   const [value, setValue] = useState("1");
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("brand");
+  // Estado local para el valor del input de búsqueda (para el debounce)
+  const [inputValue, setInputValue] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 50,
   });
-
-  const handleChange = (newValue: string) => {
-    setValue(newValue);
-  };
-
-  const handlePaginationChange = (page: number, pageSize: number) => {
-    setPaginationModel({ page: page - 1, pageSize });
-    onUpdateVehicles(page, pageSize);
-  };
-
-  const handleCreateVehicle = () => {
-    onUpdateVehicles(paginationModel.page + 1, paginationModel.pageSize);
-  };
+  const [vehiclesData, setVehiclesData] = useState<VehiclesTableData>({ data: [], pagination: { page: 1, total: 0 } });
+  const [loading, setLoading] = useState(false);
 
   const searchOptions = [
     { value: "brand", label: "Marca" },
     { value: "line", label: "Línea" },
     { value: "version", label: "Versión" },
     { value: "type", label: "Tipo" },
+    { value: "plate", label: "Placa" },
     { value: "model", label: "Año" },
     { value: "transmission", label: "Transmisión" },
     { value: "fuel_type", label: "Combustible" },
     { value: "kms", label: "Kilometraje" },
     { value: "displacement", label: "Cilindrada" },
     { value: "seat_material", label: "Material Asientos" },
-    { value: "airbags", label: "Airbags" },
   ];
 
-  const filteredVehicles = useMemo(() => {
-    if (!searchTerm) return dataVehicles;
+  // Fetch vehicles desde el backend
+  const fetchVehicles = async (
+    page: number = 1,
+    limit: number = 50,
+    findBy?: string,
+    value?: string
+  ) => {
+    setLoading(true);
+    try {
+      const vehicles = await getVehicles(page, limit, findBy, value);
+      setVehiclesData(vehicles);
+    } catch (error) {
+      setVehiclesData({ data: [], pagination: { page: 1, total: 0 } });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return dataVehicles.filter((vehicle) => {
-      if (searchField === "model") {
-        const year = new Date(vehicle.model).getFullYear().toString();
-        return year.includes(lowerSearchTerm);
+  // Sincronizar inputValue con searchTerm externo (por si se limpia desde el padre)
+  useEffect(() => {
+    setInputValue(searchTerm);
+  }, [searchTerm]);
+
+  // Debounce: esperar 500ms después de dejar de escribir para actualizar el searchTerm real
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (inputValue !== searchTerm) {
+        setSearchTerm(inputValue);
       }
-      if (searchField === "kms") {
-        const kms = vehicle.kms.toString();
-        return kms.includes(lowerSearchTerm);
-      }
-      if (searchField === "displacement") {
-        const displacement = vehicle.displacement.toString();
-        return displacement.includes(lowerSearchTerm);
-      }
-      if (searchField === "airbags") {
-        const airbags = vehicle.airbags ? "sí" : "no";
-        return airbags.toLowerCase().includes(lowerSearchTerm);
-      }
-      return vehicle[searchField as keyof Vehicle]
-        ?.toString()
-        .toLowerCase()
-        .includes(lowerSearchTerm);
-    });
-  }, [dataVehicles, searchTerm, searchField]);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [inputValue, searchTerm]);
+
+  // Actualizar vehículos cuando cambian paginación o búsqueda
+  useEffect(() => {
+    fetchVehicles(
+      paginationModel.page + 1,
+      paginationModel.pageSize,
+      searchTerm ? searchField : undefined,
+      searchTerm ? searchTerm : undefined
+    );
+  }, [paginationModel, searchTerm, searchField]);
+
+  // Handler para paginación desde ambos componentes
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPaginationModel({ page: page - 1, pageSize });
+  };
+
+  // Handler para crear vehículo (refresca la lista)
+  const handleCreateVehicle = () => {
+    fetchVehicles(
+      paginationModel.page + 1,
+      paginationModel.pageSize,
+      searchTerm ? searchField : undefined,
+      searchTerm ? searchTerm : undefined
+    );
+  };
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -148,8 +166,8 @@ const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehicl
               ?.label.toLowerCase()}`}
             variant="outlined"
             size="small"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             sx={{
               width: { xs: "100%", sm: "200px" },
               maxWidth: { xs: "200px" },
@@ -158,7 +176,7 @@ const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehicl
         </Box>
         <Tabs
           value={value}
-          onChange={(_, newValue) => handleChange(newValue)}
+          onChange={(_, newValue) => setValue(newValue)}
           sx={{ mb: 2, height: 40, justifyContent: "center" }}
           centered
         >
@@ -167,19 +185,23 @@ const TabsVehicles = ({ dataVehicles, onUpdateVehicles, pagination }: TabsVehicl
         </Tabs>
       </Box>
       <TabPanel value={value} index="1">
-        <ActiveVehicles 
-          vehicles={filteredVehicles} 
-          pagination={pagination}
+        <ActiveVehicles
+          vehicles={vehiclesData.data}
+          pagination={vehiclesData.pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
+          onUpdateVehicles={handleCreateVehicle}
+          loading={loading}
         />
       </TabPanel>
       <TabPanel value={value} index="2">
-        <VehicleTable 
-          vehicles={filteredVehicles} 
-          pagination={pagination}
+        <VehicleTable
+          vehicles={vehiclesData.data}
+          pagination={vehiclesData.pagination}
           paginationModel={paginationModel}
           onPaginationChange={handlePaginationChange}
+          onUpdateVehicles={handleCreateVehicle}
+          loading={loading}
         />
       </TabPanel>
       <Dialog open={openCreateModal} maxWidth="md" fullWidth>
